@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -12,12 +12,21 @@ import {
   ShieldAlert, 
   Sparkles, 
   Activity, 
+  DownloadCloud, 
+  AlertCircle, 
+  Loader2, 
+  RefreshCw, 
+  Layers, 
+  ChevronRight,
+  Pin,
+  Plus,
   ArrowUpRight,
+  ClipboardList,
+  Check,
   TrendingUp,
-  DownloadCloud,
-  AlertCircle,
-  Loader2,
-  RefreshCw
+  FileText,
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -27,23 +36,29 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
   PieChart, 
   Pie, 
-  Cell, 
-  LineChart, 
-  Line 
+  Cell 
 } from 'recharts';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { dashboardApi, reportsApi, overlapsApi, casesApi } from '../api/client';
 import { KpiCard } from '../components/common/KpiCard';
 import { BureauBadge } from '../components/common/BureauBadge';
 import { SlaIndicator } from '../components/common/SlaIndicator';
 import { OverlapBadge } from '../components/common/OverlapBadge';
+import { SectionHeader } from '../components/common/SectionHeader';
+import { BureauWorkloadChart } from '../components/dashboard/BureauWorkloadChart';
 
 export const DashboardPage = () => {
   const { selectedDateRange, triggerRefresh, isRefreshing } = useApp();
+  const { user: currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Tasks state for Daily Tasks card
+  const [tasks, setTasks] = useState([]);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
 
   // Queries
   const summaryQuery = useQuery({
@@ -92,26 +107,31 @@ export const DashboardPage = () => {
     ]);
   };
 
+  // Greeting logic
+  const hour = new Date().getHours();
+  const greetingTime = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const userName = currentUser?.name || 'Dr. Ramesh';
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[450px] p-8 text-slate-500 bg-white rounded-xl border border-slate-200">
-        <Loader2 className="w-10 h-10 animate-spin text-teal-600 mb-3" />
-        <p className="text-sm font-semibold text-slate-800">Loading Central Monitoring Dashboard...</p>
-        <p className="text-xs text-slate-500 mt-1">Fetching live bureau workload, SLA status, and overlap groups</p>
+      <div className="flex flex-col items-center justify-center h-full w-full p-8 text-[#71717A] bg-[#0F1011] rounded-panel border border-[#232427]">
+        <Loader2 className="w-9 h-9 animate-spin text-[#00E676] mb-3" />
+        <p className="text-sm font-semibold text-[#F4F4F5]">Loading AICTE Complaint Monitoring Dashboard...</p>
+        <p className="text-xs text-[#71717A] mt-1">Synchronizing live bureau workload, SLA status, and overlap groups</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="p-8 bg-rose-50 border border-rose-200 rounded-xl text-center max-w-2xl mx-auto my-12">
-        <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
-        <h3 className="text-lg font-bold text-rose-900">Dashboard Unavailable</h3>
-        <p className="text-xs text-rose-700 mt-1">{errorMessage}</p>
-        <p className="text-xs text-slate-500 mt-2">Could not retrieve live metrics from backend.</p>
+      <div className="p-8 bg-[#151618] border border-[#FF4D79]/30 rounded-panel text-center max-w-2xl mx-auto my-12 text-[#F4F4F5]">
+        <AlertCircle className="w-10 h-10 text-[#FF4D79] mx-auto mb-3" />
+        <h3 className="text-base font-bold text-[#F4F4F5]">Dashboard Unavailable</h3>
+        <p className="text-xs text-[#FF4D79] mt-1">{errorMessage}</p>
+        <p className="text-xs text-[#71717A] mt-2">Could not retrieve live metrics from backend.</p>
         <button
           onClick={handleManualRefresh}
-          className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 shadow"
+          className="mt-4 px-4 py-2 bg-[#FF4D79] hover:bg-[#FF4D79]/80 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 transition-colors shadow-xs"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Retry Connection</span>
@@ -130,16 +150,16 @@ export const DashboardPage = () => {
   const escalatedCases = summary.escalated || 0;
   const beyondTimelineCases = summary.beyondTimeline || 0;
 
-  // Donut chart status breakdown
+  // Donut chart status breakdown (Status Allocation Donut)
   const statusPieData = [
-    { name: 'Pending', value: pendingCases, color: '#94A3B8' },
-    { name: 'Under Process', value: underProcessCases, color: '#3B82F6' },
-    { name: 'Disposed', value: disposedCases, color: '#10B981' },
-    { name: 'Transferred', value: transferredCases, color: '#8B5CF6' },
-    { name: 'Escalated', value: escalatedCases, color: '#F43F5E' },
+    { name: 'Pending', value: pendingCases, color: '#8A99B5' },
+    { name: 'Under Process', value: underProcessCases, color: '#6C7BFF' },
+    { name: 'Disposed', value: disposedCases, color: '#19D3A2' },
+    { name: 'Transferred', value: transferredCases, color: '#B07CFF' },
+    { name: 'Escalated', value: escalatedCases, color: '#FF4D79' },
   ];
 
-  // Bureau Workload formatted for Stacked Bar Chart
+  // Bureau Workload formatted for BureauWorkloadChart
   const rawWorkload = workloadQuery.data?.data || [];
   const bureauChartData = rawWorkload.map((b) => ({
     code: b.code || b.name,
@@ -162,7 +182,7 @@ export const DashboardPage = () => {
     escalated: r.escalatedCases || 0,
   }));
 
-  // Ageing Breakdown for Trend / Ageing chart
+  // Ageing Breakdown
   const ageingData = ageingQuery.data?.data?.summary || [];
   const ageingChartData = ageingData.map((a) => ({
     bucket: a.name,
@@ -174,10 +194,12 @@ export const DashboardPage = () => {
   const upcomingDeadlines = recentCasesList
     .filter((c) => c.status !== 'disposed' && c.expectedDisposalDate)
     .sort((a, b) => new Date(a.expectedDisposalDate).getTime() - new Date(b.expectedDisposalDate).getTime())
-    .slice(0, 4);
+    .slice(0, 5);
+
+  const priorityCase = upcomingDeadlines[0] || recentCasesList[0] || null;
 
   // Active Overlaps
-  const activeOverlaps = (overlapsQuery.data?.data || []).slice(0, 5);
+  const activeOverlaps = (overlapsQuery.data?.data || []).slice(0, 4);
 
   const handleExportSummary = () => {
     const csvContent =
@@ -201,193 +223,456 @@ export const DashboardPage = () => {
     document.body.removeChild(link);
   };
 
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (!newTaskText.trim()) return;
+    setTasks([...tasks, { id: Date.now(), text: newTaskText.trim(), completed: false }]);
+    setNewTaskText('');
+    setShowAddTaskModal(false);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Welcome & Monitoring Header */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex gap-2 sm:gap-2.5 h-full w-full overflow-hidden select-none-off">
+      {/* 1. Large Main Content Panel (Scrolls independently) */}
+      <div className="flex-1 min-w-0 h-full overflow-y-auto bg-[#0F1011] border border-[#232427] rounded-panel p-4 sm:p-6 space-y-6">
+        {/* Top Greeting Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#F4F4F5] tracking-tight font-sans">
+              {greetingTime}, {userName}
+            </h1>
+            <p className="text-xs sm:text-sm text-[#71717A] mt-0.5">
+              One consolidated intelligence feed for regulatory compliance & statutory dispute resolution.
+            </p>
+          </div>
+          <div className="flex items-center space-x-2 text-xs text-[#71717A]">
+            <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
+            <span className="font-mono text-[11px] text-[#A1A1AA]">Central Registry Online</span>
+          </div>
+        </div>
+
+        {/* Pin your subjects / Quick Access Row (Image 1 style) */}
         <div>
-          <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200">
-              AICTE Integrated Grievance Cell
-            </span>
-            <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs text-slate-500 font-medium">Monitoring Window: {selectedDateRange}</span>
+          <div className="flex items-center space-x-1.5 text-xs text-[#A1A1AA] font-medium mb-2.5">
+            <Pin className="w-3.5 h-3.5 text-[#71717A]" />
+            <span>Pinned operational desks</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1 font-sans">
-            Complaint Monitoring Overview
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Monitor institutional complaints, statutory deadlines, and cross-bureau coordination.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2.5 shrink-0">
-          <button
-            onClick={handleExportSummary}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
-          >
-            <DownloadCloud className="w-3.5 h-3.5 text-slate-600" />
-            <span>Executive CSV</span>
-          </button>
-          <button
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg shadow-sm transition-colors cursor-pointer"
-          >
-            <Activity className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Synchronize Bureaus</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 7 KPI Analytical Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-        <KpiCard
-          label="Total Cases"
-          value={totalCases}
-          sublabel="All active dockets"
-          icon={FolderArchive}
-          variant="default"
-          onClick={() => navigate('/cases')}
-        />
-        <KpiCard
-          label="Pending"
-          value={pendingCases}
-          sublabel="Awaiting initial triage"
-          icon={Clock}
-          variant="pending"
-          onClick={() => navigate('/cases?status=pending')}
-        />
-        <KpiCard
-          label="Under Process"
-          value={underProcessCases}
-          sublabel="Inquiry / scrutiny active"
-          icon={Hourglass}
-          variant="process"
-          onClick={() => navigate('/cases?status=under_process')}
-        />
-        <KpiCard
-          label="Disposed"
-          value={disposedCases}
-          sublabel="Closure order issued"
-          icon={CheckCircle2}
-          variant="disposed"
-          trend={{ value: `${summary.disposalRate || '0%'} rate`, isUpward: true, isGood: true }}
-          onClick={() => navigate('/cases?status=disposed')}
-        />
-        <KpiCard
-          label="Transferred"
-          value={transferredCases}
-          sublabel="Inter-bureau routed"
-          icon={ArrowRightLeft}
-          variant="transferred"
-          onClick={() => navigate('/cases?status=transferred')}
-        />
-        <KpiCard
-          label="Escalated"
-          value={escalatedCases}
-          sublabel="Elevated to Directorate"
-          icon={AlertTriangle}
-          variant="escalated"
-          onClick={() => navigate('/cases?status=escalated')}
-        />
-        <KpiCard
-          label="Beyond Timeline"
-          value={beyondTimelineCases}
-          sublabel="SLA breach statutory"
-          icon={AlertOctagon}
-          variant="danger"
-          onClick={() => navigate('/cases?sla=overdue')}
-        />
-      </div>
-
-      {/* Main Analytics Grid (Stacked Bars & Donut) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Bureau Workload Stacked Bar Chart */}
-        <div className="lg:col-span-8 bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Bureau & Cell Case Distribution</h3>
-              <p className="text-xs text-slate-500">Cross-departmental volume classified by status</p>
-            </div>
-            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-              Active AICTE Entities
-            </span>
-          </div>
-
-          <div className="h-72 mt-4 w-full">
-            {bureauChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={bureauChartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis 
-                    dataKey="code" 
-                    tick={{ fontSize: 11, fill: '#64748B' }} 
-                    axisLine={{ stroke: '#E2E8F0' }} 
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 11, fill: '#64748B' }} 
-                    axisLine={{ stroke: '#E2E8F0' }} 
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
-                      borderRadius: '8px',
-                      color: '#FFFFFF',
-                      fontSize: '12px',
-                    }}
-                    formatter={(value, name) => [value, name === 'process' ? 'Under Process' : name]}
-                  />
-                  <Legend 
-                    verticalAlign="top" 
-                    height={36} 
-                    iconType="circle" 
-                    wrapperStyle={{ fontSize: '11px' }} 
-                  />
-                  <Bar dataKey="pending" name="Pending" stackId="a" fill="#94A3B8" />
-                  <Bar dataKey="process" name="Under Process" stackId="a" fill="#3B82F6" />
-                  <Bar dataKey="disposed" name="Disposed" stackId="a" fill="#10B981" />
-                  <Bar dataKey="escalated" name="Escalated" stackId="a" fill="#F43F5E" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                No bureau workload data available.
+          <div className="flex flex-wrap gap-2.5">
+            <div 
+              onClick={() => navigate('/cases?bureau=Regulation%20Bureau')}
+              className="bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] hover:border-[#2D2E32] rounded-xl px-4 py-2.5 flex items-center gap-3 cursor-pointer transition-all duration-150"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#6C7BFF]/15 text-[#6C7BFF] flex items-center justify-center font-bold text-xs">
+                RB
               </div>
+              <div>
+                <span className="text-xs font-semibold text-[#F4F4F5] block">Regulation Bureau</span>
+                <span className="text-[10px] text-[#71717A]">Statutory Compliance</span>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigate('/cases?bureau=Approval%20Bureau')}
+              className="bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] hover:border-[#2D2E32] rounded-xl px-4 py-2.5 flex items-center gap-3 cursor-pointer transition-all duration-150"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#00E676]/15 text-[#00E676] flex items-center justify-center font-bold text-xs">
+                AB
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-[#F4F4F5] block">Approval Bureau</span>
+                <span className="text-[10px] text-[#71717A]">Campus Accreditations</span>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => navigate('/cases?bureau=Public%20Grievance')}
+              className="bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] hover:border-[#2D2E32] rounded-xl px-4 py-2.5 flex items-center gap-3 cursor-pointer transition-all duration-150"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[#B07CFF]/15 text-[#B07CFF] flex items-center justify-center font-bold text-xs">
+                PGRC
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-[#F4F4F5] block">Grievance Cell</span>
+                <span className="text-[10px] text-[#71717A]">Petitions & Disputes</span>
+              </div>
+            </div>
+
+            {/* Dashed Add Card */}
+            <button 
+              onClick={() => navigate('/cases')}
+              className="border border-dashed border-[#232427] hover:border-[#71717A] bg-[#151618]/40 hover:bg-[#151618] rounded-xl px-4 py-2.5 flex items-center justify-center gap-1.5 text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Pin View</span>
+            </button>
+          </div>
+        </div>
+
+        {/* PLANLY-style Action Card (Image 1 style) */}
+        <div 
+          className="relative overflow-hidden bg-[#151618] border border-[#232427] rounded-card p-5 sm:p-6 transition-all"
+          style={{ 
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)', 
+            backgroundSize: '18px 18px' 
+          }}
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30 mb-2">
+                <Sparkles className="w-3 h-3" />
+                AICTE STATUTORY DIRECTIVES
+              </span>
+              <h2 className="text-lg sm:text-xl font-bold text-[#F4F4F5] leading-snug tracking-tight">
+                Enforce regulatory timelines and coordinate multi-bureau dispute resolution.
+              </h2>
+              <p className="text-xs text-[#71717A] mt-1">
+                Statutory SLA window: <span className="text-[#A1A1AA] font-mono">{selectedDateRange}</span>. Ensure cross-bureau overlap hearings precede individual determinations.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button
+                onClick={handleExportSummary}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-[#F4F4F5] bg-[#151618] hover:bg-[#1A1B1E] rounded-lg transition-colors border border-[#232427]"
+              >
+                <DownloadCloud className="w-3.5 h-3.5 text-[#71717A]" />
+                <span>Executive CSV</span>
+              </button>
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold text-black bg-[#00E676] hover:bg-[#00c864] rounded-lg transition-all shadow-xs"
+              >
+                <Activity className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>Synchronize Feeds &rarr;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Section Header: Case Overview */}
+        <SectionHeader 
+          title="Case Overview" 
+          action={
+            <button 
+              onClick={() => navigate('/cases')} 
+              className="text-[11px] font-medium text-[#71717A] hover:text-[#00E676] transition-colors"
+            >
+              All Dockets &rarr;
+            </button>
+          } 
+        />
+
+        {/* KPI Row: 7 Cards with 2px Colored Top Accent */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
+          <KpiCard
+            label="Total Dockets"
+            value={totalCases}
+            sublabel="All registered cases"
+            icon={FolderArchive}
+            variant="default"
+            onClick={() => navigate('/cases')}
+          />
+          <KpiCard
+            label="Pending Triage"
+            value={pendingCases}
+            sublabel="Awaiting initial review"
+            icon={Clock}
+            variant="pending"
+            onClick={() => navigate('/cases?status=pending')}
+          />
+          <KpiCard
+            label="Under Process"
+            value={underProcessCases}
+            sublabel="Active investigation"
+            icon={Hourglass}
+            variant="process"
+            onClick={() => navigate('/cases?status=under_process')}
+          />
+          <KpiCard
+            label="Disposed"
+            value={disposedCases}
+            sublabel="Statutory order issued"
+            icon={CheckCircle2}
+            variant="disposed"
+            trend={{ value: `${summary.disposalRate || '0%'} rate`, isUpward: true, isGood: true }}
+            onClick={() => navigate('/cases?status=disposed')}
+          />
+          <KpiCard
+            label="Transferred"
+            value={transferredCases}
+            sublabel="Inter-bureau routed"
+            icon={ArrowRightLeft}
+            variant="transferred"
+            onClick={() => navigate('/cases?status=transferred')}
+          />
+          <KpiCard
+            label="Escalated"
+            value={escalatedCases}
+            sublabel="Elevated to Council"
+            icon={AlertTriangle}
+            variant="escalated"
+            onClick={() => navigate('/cases?status=escalated')}
+          />
+          <KpiCard
+            label="Beyond SLA"
+            value={beyondTimelineCases}
+            sublabel="Timeline exceeded"
+            icon={AlertOctagon}
+            variant="danger"
+            onClick={() => navigate('/cases?sla=overdue')}
+          />
+        </div>
+
+        {/* Section Header: Bureau Caseload Distribution */}
+        <SectionHeader title="Bureau & Cell Distribution" />
+
+        {/* Bureau & Cell Stacked Bar Chart */}
+        <div>
+          <BureauWorkloadChart data={bureauChartData} isLoading={workloadQuery.isLoading} />
+        </div>
+
+        {/* Section Header: Regional & Ageing Analytics */}
+        <SectionHeader title="Regional Load & Ageing Compliance" />
+
+        {/* Regional Load & Case Ageing Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Regional Caseload Distribution */}
+          <div className="lg:col-span-6 bg-[#151618] p-5 rounded-card border border-[#232427] flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-[#232427]">
+              <div>
+                <h3 className="text-sm font-bold text-[#F4F4F5] font-sans">Regional Caseload Distribution</h3>
+                <p className="text-xs text-[#71717A]">Distribution across administrative council zones</p>
+              </div>
+              <span className="text-[10px] text-[#00E676] bg-[#00E676]/10 border border-[#00E676]/30 px-2 py-0.5 rounded font-mono font-medium">
+                Live Aggregation
+              </span>
+            </div>
+
+            <div className="h-64 mt-3">
+              {regionalChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={regionalChartData}
+                    layout="vertical"
+                    margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1B1C20" />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#71717A' }} axisLine={{ stroke: '#232427' }} />
+                    <YAxis dataKey="region" type="category" tick={{ fontSize: 11, fill: '#71717A', fontWeight: 500 }} axisLine={{ stroke: '#232427' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#0F1011',
+                        borderColor: '#232427',
+                        borderRadius: '12px',
+                        color: '#F4F4F5',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <Bar dataKey="cases" name="Total Complaints" fill="#19D3A2" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="pending" name="Open Complaints" fill="#6C7BFF" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-xs text-[#71717A]">
+                  No regional data available.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Complaint Ageing Breakdown */}
+          <div className="lg:col-span-6 bg-[#151618] p-5 rounded-card border border-[#232427] flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-[#232427]">
+              <div>
+                <h3 className="text-sm font-bold text-[#F4F4F5] font-sans">Case Ageing & SLA Compliance</h3>
+                <p className="text-xs text-[#71717A]">Classification of pending inquiries by duration</p>
+              </div>
+              <div className="flex items-center space-x-1 text-xs font-semibold text-[#19D3A2] bg-[#19D3A2]/10 border border-[#19D3A2]/30 px-2 py-0.5 rounded font-mono">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Disposal: {summary.disposalRate || '0%'}</span>
+              </div>
+            </div>
+
+            <div className="h-64 mt-3">
+              {ageingChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={ageingChartData}
+                    margin={{ top: 10, right: 15, left: -10, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1B1C20" />
+                    <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: '#71717A', fontWeight: 500 }} axisLine={{ stroke: '#232427' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#71717A' }} axisLine={{ stroke: '#232427' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#0F1011',
+                        borderColor: '#232427',
+                        borderRadius: '12px',
+                        color: '#F4F4F5',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <Bar dataKey="count" name="Open Inquiries" fill="#6C7BFF" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-xs text-[#71717A]">
+                  No ageing data recorded.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Section Header: Priority Cross-Bureau Overlaps */}
+        <SectionHeader 
+          title="Priority Cross-Bureau Overlaps" 
+          action={
+            <button 
+              onClick={() => navigate('/overlaps')} 
+              className="text-[11px] font-medium text-[#71717A] hover:text-[#00E676] transition-colors"
+            >
+              Overlap Centre &rarr;
+            </button>
+          } 
+        />
+
+        {/* Cross-Bureau Overlap Queue */}
+        <div className="bg-[#151618] rounded-card border border-[#232427] p-5">
+          <div className="flex items-center justify-between pb-3 border-b border-[#232427]">
+            <div className="flex items-center space-x-2">
+              <div className="p-1.5 bg-[#B07CFF]/15 text-[#B07CFF] rounded-lg border border-[#B07CFF]/30">
+                <ShieldAlert className="w-4 h-4 text-[#B07CFF]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#F4F4F5] font-sans">Cross-Bureau Overlap Queue</h3>
+                <p className="text-xs text-[#71717A]">Concurrent investigations across multiple bureau dockets</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="divide-y divide-[#232427] mt-2">
+            {activeOverlaps.length === 0 ? (
+              <div className="py-8 text-center text-xs text-[#71717A]">
+                No active cross-bureau overlap groups detected.
+              </div>
+            ) : (
+              activeOverlaps.map((ov) => {
+                const instName = ov.institution?.name || 'Institutional Case Group';
+                const permId = ov.institution?.aictePermanentId || 'AICTE-RECORD';
+                const bureausList = (ov.cases || [])
+                  .map((c) => c.currentBureau?.name || c.currentBureau?.code)
+                  .filter(Boolean);
+                const distinctBureaus = Array.from(new Set(bureausList));
+
+                return (
+                  <div key={ov._id} className="py-3.5 space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono text-xs font-bold text-[#B07CFF] bg-[#B07CFF]/10 px-2 py-0.5 rounded border border-[#B07CFF]/30">
+                            {ov._id.substring(ov._id.length - 8).toUpperCase()}
+                          </span>
+                          <span className="text-xs font-bold text-[#F4F4F5]">{instName}</span>
+                        </div>
+                        <p className="text-[11px] text-[#71717A] mt-0.5">
+                          Permanent ID: <span className="font-mono font-medium text-[#A1A1AA]">{permId}</span>
+                        </p>
+                      </div>
+                      <OverlapBadge severity={ov.severity} />
+                    </div>
+
+                    <p className="text-xs text-[#A1A1AA] line-clamp-2 bg-[#0F1011] p-2.5 rounded-lg border border-[#232427]">
+                      {ov.resolutionRemarks || `Institution has ${ov.cases?.length || 0} active cases across ${distinctBureaus.length} different bureau dockets.`}
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[11px] font-semibold text-[#71717A]">Involved:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {distinctBureaus.map((b) => (
+                            <BureauBadge key={b} bureau={b} showCodeOnly />
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <span className="text-[11px] text-[#71717A]">
+                          Updated: {ov.updatedAt ? new Date(ov.updatedAt).toLocaleDateString() : 'Recent'}
+                        </span>
+                        <button
+                          onClick={() => navigate('/overlaps')}
+                          className="px-2.5 py-1 text-xs font-semibold text-[#B07CFF] bg-[#B07CFF]/10 hover:bg-[#B07CFF]/20 rounded border border-[#B07CFF]/30 transition-colors"
+                        >
+                          Coordinate Overlap &rarr;
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2 text-right">
-            RB: Regulatory • PGRC: Grievances • APPROVAL: Approval • ACADEMIC: Academic
-          </div>
         </div>
 
-        {/* Case Status Distribution Donut */}
-        <div className="lg:col-span-4 bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Status Allocation</h3>
-              <p className="text-xs text-slate-500">Live composition of all cases</p>
+        {/* Mobile / Below-XL Right Rail Fallback */}
+        <div className="xl:hidden pt-4 space-y-4">
+          <SectionHeader title="Priority Allocation & Tasks" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Status Allocation for mobile */}
+            <div className="bg-[#151618] p-5 rounded-card border border-[#232427]">
+              <h4 className="text-sm font-bold text-[#F4F4F5]">Status Allocation ({totalCases} Total)</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs mt-3">
+                {statusPieData.map((item) => (
+                  <div key={item.name} className="flex items-center space-x-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-[#A1A1AA] text-[11px]">{item.name}:</span>
+                    <span className="font-mono font-bold text-[#F4F4F5] ml-auto text-[11px]">{item.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+            {/* Purple Alert card for mobile */}
+            <div className="bg-gradient-to-br from-[#2E1065] via-[#3B0764] to-[#1E1B4B] border border-[#581C87] rounded-card p-5 text-white">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#E9D5FF]">Statutory SLA Alert</span>
+              <h4 className="text-xl font-extrabold mt-1">{beyondTimelineCases} Cases Beyond SLA</h4>
+              <button
+                onClick={() => navigate('/cases?sla=overdue')}
+                className="mt-3 w-full py-2 bg-[#00E676] hover:bg-[#00c864] text-black font-bold text-xs rounded-lg transition-colors"
+              >
+                Review SLA Breaches &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Right Rail of Stacked Widget Cards (~310px, Image 1 style) */}
+      <div className="w-[310px] shrink-0 hidden xl:flex flex-col gap-2.5 h-full overflow-y-auto pr-0.5">
+        {/* Widget 1: Status Allocation Donut Card (Thin ring, total in center, carousel dots) */}
+        <div className="bg-[#0F1011] border border-[#232427] rounded-panel p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-[#232427]">
+            <h3 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider">Status Allocation</h3>
+            <span className="text-[10px] font-mono font-bold text-[#A1A1AA] bg-[#151618] px-2 py-0.5 rounded border border-[#232427]">
               {totalCases} Cases
             </span>
           </div>
 
-          <div className="h-56 relative my-2">
+          {/* Thin Donut Chart */}
+          <div className="h-44 relative my-2">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statusPieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={55}
-                  outerRadius={80}
+                  innerRadius={54}
+                  outerRadius={70}
                   paddingAngle={3}
                   dataKey="value"
+                  stroke="#0F1011"
+                  strokeWidth={2}
                 >
                   {statusPieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -395,302 +680,202 @@ export const DashboardPage = () => {
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: '#1E293B',
-                    borderColor: '#334155',
-                    borderRadius: '8px',
-                    color: '#FFFFFF',
-                    fontSize: '12px',
+                    backgroundColor: '#0F1011',
+                    borderColor: '#232427',
+                    borderRadius: '10px',
+                    color: '#F4F4F5',
+                    fontSize: '11px',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold font-mono text-slate-800">{totalCases}</span>
-              <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Total</span>
+              <span className="text-2xl font-bold font-mono text-[#F4F4F5] leading-none">{totalCases}</span>
+              <span className="text-[9px] text-[#71717A] font-semibold uppercase tracking-wider mt-1">Total Cases</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
+          {/* Legend rows */}
+          <div className="space-y-1.5 text-xs border-t border-[#232427] pt-2.5">
             {statusPieData.map((item) => (
-              <div key={item.name} className="flex items-center space-x-2">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-slate-600 truncate">{item.name}</span>
-                <span className="font-mono font-semibold text-slate-900 ml-auto">{item.value}</span>
+              <div key={item.name} className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-[#A1A1AA]">{item.name}</span>
+                </div>
+                <span className="font-mono font-bold text-[#F4F4F5]">
+                  {item.value} <span className="text-[#71717A] font-normal text-[10px]">({totalCases > 0 ? Math.round((item.value / totalCases) * 100) : 0}%)</span>
+                </span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Secondary Analytics Row: Regional Distribution & Ageing Bucket */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Regional Distribution */}
-        <div className="lg:col-span-6 bg-white p-5 rounded-xl border border-slate-200 shadow-subtle">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          {/* Carousel dots at bottom (Image 1 style) */}
+          <div className="flex items-center justify-center space-x-1.5 pt-3">
+            <span className="w-4 h-1 rounded-full bg-[#00E676]" />
+            <span className="w-1.5 h-1 rounded-full bg-[#232427]" />
+            <span className="w-1.5 h-1 rounded-full bg-[#232427]" />
+          </div>
+        </div>
+
+        {/* Widget 2: Highlighted Alert Card (FRI45 SALE style) */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#2E1065] via-[#3B0764] to-[#1E1B4B] border border-[#581C87] rounded-panel p-4 text-white shadow-lg">
+          <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Regional Case Load</h3>
-              <p className="text-xs text-slate-500">Distribution across administrative zones</p>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#D8B4FE] block">
+                STATUTORY DEADLINE
+              </span>
+              <h3 className="text-lg font-extrabold text-[#F4F4F5] mt-0.5 tracking-tight leading-tight">
+                {beyondTimelineCases} Cases Beyond Timeline
+              </h3>
+              <p className="text-[11px] text-[#E9D5FF]/80 mt-1">
+                Breaches mandatory AICTE Council resolution window.
+              </p>
             </div>
-            <span className="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-medium">
-              Live Regional Aggregation
+
+            {/* Ticket / Calendar Badge */}
+            <div className="bg-[#581C87]/80 border border-[#A855F7]/40 rounded-xl px-2.5 py-1.5 text-center shrink-0 shadow-inner">
+              <Calendar className="w-3.5 h-3.5 text-[#E9D5FF] mx-auto mb-0.5" />
+              <span className="block font-mono text-[9px] uppercase tracking-wider text-[#D8B4FE]">SLA</span>
+              <span className="block font-mono font-bold text-xs text-white">OCT 23</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/cases?sla=overdue')}
+            className="mt-3.5 w-full py-2 px-3 bg-[#00E676] hover:bg-[#00c864] text-black font-bold text-xs rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <span>Review SLA Breaches</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Widget 3: Priority Case of the Day Mini Card (Image 1 style Problem of the Day) */}
+        <div className="bg-[#0F1011] border border-[#232427] rounded-panel p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-[#232427]">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-xs font-bold text-[#F4F4F5]">Priority Case of the Day</span>
+              <ArrowUpRight className="w-3 h-3 text-[#71717A]" />
+            </div>
+            <span className="px-2 py-0.5 bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 rounded text-[10px] font-mono font-bold">
+              CRITICAL
             </span>
           </div>
 
-          <div className="h-64 mt-3">
-            {regionalChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={regionalChartData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 30, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#64748B' }} />
-                  <YAxis dataKey="region" type="category" tick={{ fontSize: 11, fill: '#64748B' }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
-                      borderRadius: '8px',
-                      color: '#FFFFFF',
-                      fontSize: '12px',
-                    }}
-                  />
-                  <Bar dataKey="cases" name="Complaint Cases" fill="#0F9D8A" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="pending" name="Open Cases" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                No regional data available.
+          {priorityCase ? (
+            <div className="py-2.5 space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-mono font-bold text-[#F4F4F5]">{priorityCase.caseId}</span>
+                <span className="text-[10px] text-[#71717A] font-mono flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-[#FF5C5C]" />
+                  Due Today
+                </span>
               </div>
-            )}
-          </div>
+              <p className="text-xs text-[#A1A1AA] line-clamp-2">
+                {priorityCase.institution?.name || priorityCase.rawInstitutionName || 'Urgent Institutional Dispute'}
+              </p>
+              <div className="pt-1 flex items-center justify-between text-[11px] text-[#71717A]">
+                <span>{priorityCase.currentBureau?.code || 'Central Registry'}</span>
+                <span className="text-[10px] text-[#19D3A2]">High SLA Impact</span>
+              </div>
+              <button
+                onClick={() => navigate(`/cases/${encodeURIComponent(priorityCase._id)}`)}
+                className="mt-2 w-full py-1.5 bg-[#151618] hover:bg-[#1A1B1E] text-[#F4F4F5] border border-[#232427] rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+              >
+                <span>Review Case Dossier</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#71717A]" />
+              </button>
+            </div>
+          ) : (
+            <div className="py-4 text-center text-xs text-[#71717A]">
+              No high-priority cases pending review today.
+            </div>
+          )}
         </div>
 
-        {/* Complaint Ageing Breakdown */}
-        <div className="lg:col-span-6 bg-white p-5 rounded-xl border border-slate-200 shadow-subtle">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Complaint Ageing Distribution</h3>
-              <p className="text-xs text-slate-500">Days open since registration</p>
-            </div>
-            <div className="flex items-center space-x-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Disposal Rate: {summary.disposalRate || '0%'}</span>
-            </div>
+        {/* Widget 4: Daily Tasks / Coordination Card (Image 1 style Daily Planner) */}
+        <div className="bg-[#0F1011] border border-[#232427] rounded-panel p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-2 border-b border-[#232427]">
+            <h3 className="text-xs font-bold text-[#F4F4F5] uppercase tracking-wider">Daily Coordination Tasks</h3>
+            <span className="text-[10px] text-[#71717A] font-mono">{tasks.length} active</span>
           </div>
 
-          <div className="h-64 mt-3">
-            {ageingChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={ageingChartData}
-                  margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: '#64748B' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
-                      borderRadius: '8px',
-                      color: '#FFFFFF',
-                      fontSize: '12px',
-                    }}
-                  />
-                  <Bar dataKey="count" name="Open Complaints" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                No ageing data available.
+          {tasks.length === 0 ? (
+            /* Empty state (matching Image 1 empty state) */
+            <div className="py-5 text-center flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-[#151618] border border-[#232427] flex items-center justify-center text-[#71717A] mb-2">
+                <ClipboardList className="w-5 h-5" />
               </div>
-            )}
-          </div>
+              <h4 className="text-xs font-semibold text-[#F4F4F5]">No tasks for today</h4>
+              <p className="text-[11px] text-[#71717A] mt-0.5 max-w-[200px]">
+                Add your tasks to see your daily coordination plan here.
+              </p>
+            </div>
+          ) : (
+            <div className="py-2 space-y-1.5 max-h-36 overflow-y-auto">
+              {tasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  onClick={() => setTasks(tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t))}
+                  className="p-2 bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${task.completed ? 'bg-[#00E676] border-[#00E676] text-black' : 'border-[#71717A]'}`}>
+                    {task.completed && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                  </div>
+                  <span className={`text-[11px] truncate ${task.completed ? 'line-through text-[#71717A]' : 'text-[#F4F4F5]'}`}>
+                    {task.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add tasks dashed button */}
+          <button
+            onClick={() => setShowAddTaskModal(true)}
+            className="w-full py-1.5 border border-dashed border-[#232427] hover:border-[#71717A] rounded-lg text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors flex items-center justify-center gap-1.5 mt-2"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Add task</span>
+          </button>
         </div>
       </div>
 
-      {/* Priority & Coordination Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Prominent Potential Overlapping Cases Panel */}
-        <div className="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-subtle p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-purple-100 text-purple-800 rounded-lg">
-                  <ShieldAlert className="w-4 h-4 text-purple-700" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Potential Overlapping Cases Queue</h3>
-                  <p className="text-xs text-slate-500">Cross-bureau correlation flags requiring administrative alignment</p>
-                </div>
+      {/* Add Task Modal */}
+      {showAddTaskModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F1011] border border-[#232427] rounded-2xl p-5 w-full max-w-sm text-[#F4F4F5] shadow-2xl">
+            <h3 className="text-sm font-bold text-[#F4F4F5]">Add Daily Task</h3>
+            <p className="text-xs text-[#71717A] mt-0.5">Quick reminder for today's complaint monitoring agenda.</p>
+            <form onSubmit={handleAddTask} className="mt-3 space-y-3">
+              <input
+                type="text"
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                placeholder="e.g. Follow up on Regulation Bureau overlap"
+                className="w-full bg-[#151618] border border-[#232427] rounded-lg px-3 py-2 text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-[#00E676]"
+                autoFocus
+              />
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAddTaskModal(false)}
+                  className="px-3 py-1.5 text-xs text-[#71717A] hover:text-[#F4F4F5]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 bg-[#00E676] hover:bg-[#00c864] text-black font-bold text-xs rounded-lg transition-colors"
+                >
+                  Save Task
+                </button>
               </div>
-              <button
-                onClick={() => navigate('/overlaps')}
-                className="text-xs font-semibold text-purple-700 hover:text-purple-900 inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>View Overlap Centre</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="divide-y divide-slate-100 mt-2">
-              {activeOverlaps.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  No active cross-bureau overlap groups detected.
-                </div>
-              ) : (
-                activeOverlaps.map((ov) => {
-                  const instName = ov.institution?.name || 'Institutional Case Group';
-                  const permId = ov.institution?.aictePermanentId || 'AICTE-RECORD';
-                  const bureausList = (ov.cases || [])
-                    .map((c) => c.currentBureau?.name || c.currentBureau?.code)
-                    .filter(Boolean);
-                  const distinctBureaus = Array.from(new Set(bureausList));
-
-                  return (
-                    <div key={ov._id} className="py-3.5 space-y-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono text-xs font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                              {ov._id.substring(ov._id.length - 8).toUpperCase()}
-                            </span>
-                            <span className="text-xs font-bold text-slate-900">{instName}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Permanent ID: <span className="font-mono font-medium text-slate-700">{permId}</span>
-                          </p>
-                        </div>
-                        <OverlapBadge severity={ov.severity} />
-                      </div>
-
-                      <p className="text-xs text-slate-600 line-clamp-2 bg-slate-50/70 p-2 rounded border border-slate-100">
-                        {ov.resolutionRemarks || `Institution has ${ov.cases?.length || 0} active cases across ${distinctBureaus.length} different bureau dockets.`}
-                      </p>
-
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-[11px] font-semibold text-slate-500">Involved:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {distinctBureaus.map((b) => (
-                              <BureauBadge key={b} bureau={b} showCodeOnly />
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <span className="text-[11px] text-slate-400">
-                            Updated: {ov.updatedAt ? new Date(ov.updatedAt).toLocaleDateString() : 'Recent'}
-                          </span>
-                          <button
-                            onClick={() => navigate('/overlaps')}
-                            className="px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded border border-purple-200 transition-colors cursor-pointer"
-                          >
-                            Review Overlap →
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          <div className="p-3 bg-purple-50/50 rounded-lg border border-purple-100 text-[11px] text-purple-900 mt-3 flex items-start space-x-2">
-            <Sparkles className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
-            <p>
-              <strong>Coordination Notice:</strong> An overlap flag highlights co-occurring bureau actions on a single institution.
-              Administrative nodal officers must coordinate joint hearings before independent orders are issued.
-            </p>
+            </form>
           </div>
         </div>
-
-        {/* Upcoming Deadlines & Recent Activity Column */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Upcoming Deadlines */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-subtle p-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">Upcoming SLA Deadlines</h3>
-                <p className="text-xs text-slate-500">Statutory resolution countdowns</p>
-              </div>
-              <button
-                onClick={() => navigate('/cases')}
-                className="text-xs font-semibold text-teal-700 hover:text-teal-900 cursor-pointer"
-              >
-                All Urgencies
-              </button>
-            </div>
-
-            <div className="divide-y divide-slate-100 mt-2">
-              {upcomingDeadlines.length === 0 ? (
-                <div className="py-6 text-center text-xs text-slate-400">
-                  No cases due soon.
-                </div>
-              ) : (
-                upcomingDeadlines.map((c) => {
-                  const now = new Date();
-                  const targetDate = new Date(c.expectedDisposalDate);
-                  const diffDays = Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                  const slaStatus = diffDays < 0 ? 'Beyond Timeline' : diffDays <= 3 ? 'Due Soon' : 'Within Timeline';
-
-                  return (
-                    <div
-                      key={c._id}
-                      onClick={() => navigate(`/cases/${encodeURIComponent(c._id)}`)}
-                      className="py-2.5 flex items-center justify-between hover:bg-slate-50/80 p-2 rounded cursor-pointer transition-colors"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-mono text-xs font-bold text-slate-900">{c.caseId}</span>
-                          <BureauBadge bureau={c.currentBureau?.name || c.currentBureau?.code || 'Bureau'} showCodeOnly />
-                        </div>
-                        <p className="text-xs text-slate-600 truncate mt-0.5">
-                          {c.institution?.name || c.rawInstitutionName}
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                          Assigned: {c.assignedOfficer?.name || 'Unassigned'}
-                        </p>
-                      </div>
-
-                      <div className="shrink-0 text-right">
-                        <SlaIndicator
-                          slaStatus={slaStatus}
-                          daysRemaining={diffDays}
-                          expectedDate={new Date(c.expectedDisposalDate).toLocaleDateString()}
-                        />
-                        <p className="text-[10px] text-slate-400 mt-1">
-                          Due: {new Date(c.expectedDisposalDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Quick Guidance Card */}
-          <div className="bg-gradient-to-br from-[#0c1a2b] to-[#142b45] text-white rounded-xl shadow-subtle p-5">
-            <h4 className="text-xs font-semibold text-teal-300 uppercase tracking-wider mb-1">
-              AICTE Central Guidance
-            </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Disposal timelines are governed by AICTE Gazette norms. Cases flagged as overlapping across multiple bureaus
-              require coordination before individual orders are issued.
-            </p>
-            <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
-              <span className="text-slate-400">Total Monitored Bureaus:</span>
-              <span className="font-bold text-teal-300 font-mono">6 Bureaus & Cells</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

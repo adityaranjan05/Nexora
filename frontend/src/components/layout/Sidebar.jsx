@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,15 +12,23 @@ import {
   Settings, 
   ShieldAlert,
   LogOut,
-  X
+  X,
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeft,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 
-export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
+export const Sidebar = ({ mobileOpen, setMobileOpen, collapsed = false, setCollapsed }) => {
   const { overlaps = [], alerts = [], matchReviews = [] } = useApp();
   const { user: currentUser, role, logout } = useAuth();
   const location = useLocation();
+
+  const [opsOpen, setOpsOpen] = useState(true);
+  const [additionalsOpen, setAdditionalsOpen] = useState(true);
 
   const activeOverlapsCount = Array.isArray(overlaps) 
     ? overlaps.filter((o) => o.status === 'open' || o.status === 'Under Review').length 
@@ -38,60 +46,69 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       name: 'Overview', 
       path: '/', 
       icon: LayoutDashboard,
+      group: 'operations',
       roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer', 'data_operator']
     },
     { 
       name: 'Cases', 
       path: '/cases', 
       icon: FileText,
+      group: 'operations',
       roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer', 'data_operator']
     },
     { 
       name: 'Institutions', 
       path: '/institutions', 
       icon: Building2,
+      group: 'operations',
       roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer', 'data_operator']
     },
     { 
       name: 'Overlap Centre', 
       path: '/overlaps', 
       icon: GitMerge, 
+      group: 'operations',
       badge: activeOverlapsCount > 0 ? activeOverlapsCount : null,
-      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
+      badgeColor: 'bg-[#D97706]/20 text-[#F59E0B] border-[#D97706]/30',
       roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer']
-    },
-    { 
-      name: 'Alerts', 
-      path: '/alerts', 
-      icon: Bell, 
-      badge: unreadAlertsCount > 0 ? unreadAlertsCount : null,
-      badgeColor: 'bg-rose-100 text-rose-800 border-rose-200',
-      roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer', 'data_operator']
     },
     { 
       name: 'Match Review', 
       path: '/match-review', 
       icon: CheckCheck, 
+      group: 'operations',
       badge: pendingMatchReviewsCount > 0 ? pendingMatchReviewsCount : null,
-      badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
+      badgeColor: 'bg-[#D97706]/20 text-[#F59E0B] border-[#D97706]/30',
       roles: ['super_admin', 'bureau_officer', 'data_operator']
+    },
+    { 
+      name: 'Alerts', 
+      path: '/alerts', 
+      icon: Bell, 
+      group: 'additionals',
+      badge: unreadAlertsCount > 0 ? unreadAlertsCount : null,
+      badgeColor: 'bg-[#FF4D79]/20 text-[#FF4D79] border-[#FF4D79]/30',
+      roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer', 'data_operator']
     },
     { 
       name: 'Imports', 
       path: '/imports', 
-      icon: UploadCloud,
+      icon: UploadCloud, 
+      group: 'additionals',
       roles: ['super_admin', 'bureau_officer', 'data_operator', 'senior_management']
     },
     { 
       name: 'Reports', 
       path: '/reports', 
-      icon: BarChart3,
+      icon: BarChart3, 
+      group: 'additionals',
       roles: ['super_admin', 'senior_management', 'bureau_officer', 'regional_officer']
     },
     { 
       name: 'Administration', 
       path: '/admin', 
-      icon: Settings,
+      icon: Settings, 
+      group: 'additionals',
       roles: ['super_admin']
     },
   ];
@@ -101,120 +118,198 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     !item.roles || item.roles.includes(currentRole)
   );
 
+  const operationsNav = navigation.filter((n) => n.group === 'operations');
+  const additionalsNav = navigation.filter((n) => n.group === 'additionals');
+
   const formatRoleLabel = (r) => {
     switch (r) {
-      case 'super_admin': return 'Super Administrator';
-      case 'senior_management': return 'Senior Management';
-      case 'bureau_officer': return 'Bureau Officer';
+      case 'super_admin': return 'Super Admin';
+      case 'senior_management': return 'Directorate';
+      case 'bureau_officer': return 'Nodal Officer';
       case 'regional_officer': return 'Regional Officer';
-      case 'data_operator': return 'Data Operator';
-      default: return r || 'Authorized User';
+      case 'data_operator': return 'Intake Operator';
+      default: return r || 'Officer';
     }
   };
 
   const navContent = (
-    <div className="flex flex-col h-full bg-[linear-gradient(180deg,#081a2b_0%,#0b2032_58%,#101c35_100%)] text-white">
-      {/* Brand Header */}
-      <div className="px-5 py-5 border-b border-slate-700/60 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-md border border-teal-300/30">
-            <ShieldAlert className="w-6 h-6 text-white" />
+    <div className="flex flex-col h-full bg-[#0F1011] text-[#F4F4F5] rounded-[16px] border border-[#232427] overflow-hidden select-none">
+      {/* Brand Header with Collapsible Toggle */}
+      <div className="px-3.5 py-3 border-b border-[#232427] flex items-center justify-between">
+        <div className="flex items-center space-x-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#151618] border border-[#232427] flex items-center justify-center shrink-0">
+            <span className="font-bold text-sm tracking-tighter text-[#00E676]">F</span>
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold tracking-tight text-white font-sans">Nexora</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-teal-500/20 text-teal-300 rounded border border-teal-400/30">
-                AICTE
-              </span>
+          {!collapsed && (
+            <div className="min-w-0">
+              <div className="flex items-center space-x-1.5">
+                <span className="font-bold text-sm text-[#F4F4F5] tracking-tight">Nexora</span>
+                <span className="px-1.5 py-0.2 text-[9px] font-mono font-semibold bg-[#232427] text-[#A1A1AA] rounded">
+                  AICTE
+                </span>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-300 tracking-normal font-medium leading-tight">
-              Central Monitoring Layer
-            </p>
-          </div>
+          )}
         </div>
+
+        {/* Desktop Collapse Button */}
+        <button
+          onClick={() => setCollapsed?.(!collapsed)}
+          className="hidden md:flex p-1 text-[#71717A] hover:text-[#F4F4F5] hover:bg-[#1A1B1E] rounded-md transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        </button>
+
+        {/* Mobile Close Button */}
         {mobileOpen && (
           <button 
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg"
+            className="md:hidden p-1 text-[#71717A] hover:text-white rounded-md"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Institutional Metadata Pill */}
-      <div className="px-5 py-2.5 bg-[#0C1A2B]/70 border-b border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-        <span className="truncate">Statutory Coordination System</span>
-        <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Connected"></span>
-      </div>
-
-      {/* Main Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-          Operations & Monitoring
-        </div>
-        {navigation.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path || 
-            (item.path !== '/' && location.pathname.startsWith(item.path));
-
-          return (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-md font-medium transition-all group ${
-                isActive
-                  ? 'bg-teal-600/90 text-white font-semibold shadow-sm'
-                  : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-              }`}
+      {/* Navigation Sections */}
+      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+        {/* Operations & Monitoring Group */}
+        <div>
+          {!collapsed ? (
+            <button
+              onClick={() => setOpsOpen(!opsOpen)}
+              className="w-full flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-[#71717A] uppercase tracking-wider hover:text-[#A1A1AA] transition-colors"
             >
-              <div className="flex items-center space-x-3">
-                <Icon
-                  className={`w-4 h-4 transition-colors ${
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-teal-400'
-                  }`}
-                />
-                <span>{item.name}</span>
-              </div>
+              <span>Operations & Monitoring</span>
+              {opsOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            </button>
+          ) : (
+            <div className="w-full text-center text-[10px] text-[#71717A] py-1">&bull;&bull;&bull;</div>
+          )}
 
-              {item.badge && (
-                <span
-                  className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full border ${item.badgeColor}`}
-                >
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
-          );
-        })}
+          {(opsOpen || collapsed) && (
+            <div className="space-y-1 mt-1">
+              {operationsNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path || 
+                  (item.path !== '/' && location.pathname.startsWith(item.path));
+
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    title={collapsed ? item.name : undefined}
+                    className={`flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-3'} py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-[#1F2023] text-[#F4F4F5] font-semibold'
+                        : 'text-[#A1A1AA] hover:bg-[#151618] hover:text-[#F4F4F5]'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#F4F4F5]' : 'text-[#71717A]'}`} strokeWidth={1.75} />
+                      {!collapsed && <span className="truncate">{item.name}</span>}
+                    </div>
+
+                    {!collapsed && item.badge && (
+                      <span className={`px-1.5 py-0.2 text-[10px] font-mono font-bold rounded-full border ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Additionals Group */}
+        <div>
+          {!collapsed ? (
+            <button
+              onClick={() => setAdditionalsOpen(!additionalsOpen)}
+              className="w-full flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-[#71717A] uppercase tracking-wider hover:text-[#A1A1AA] transition-colors"
+            >
+              <span>Additionals</span>
+              {additionalsOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            </button>
+          ) : (
+            <div className="w-full text-center text-[10px] text-[#71717A] py-1">&bull;&bull;&bull;</div>
+          )}
+
+          {(additionalsOpen || collapsed) && (
+            <div className="space-y-1 mt-1">
+              {additionalsNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path || 
+                  (item.path !== '/' && location.pathname.startsWith(item.path));
+
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    title={collapsed ? item.name : undefined}
+                    className={`flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-3'} py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-[#1F2023] text-[#F4F4F5] font-semibold'
+                        : 'text-[#A1A1AA] hover:bg-[#151618] hover:text-[#F4F4F5]'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#F4F4F5]' : 'text-[#71717A]'}`} strokeWidth={1.75} />
+                      {!collapsed && <span className="truncate">{item.name}</span>}
+                    </div>
+
+                    {!collapsed && item.badge && (
+                      <span className={`px-1.5 py-0.2 text-[10px] font-mono font-bold rounded-full border ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
-      {/* User Profile & Logout Footer */}
-      <div className="p-3 border-t border-slate-800 bg-[#0C1A2B]/80">
-        <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold border border-teal-400/40 shrink-0">
+      {/* Pinned User Card at Bottom */}
+      <div className="p-2 border-t border-[#232427] bg-[#0F1011]">
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-xl bg-[#151618] border border-[#232427]`}>
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-[#1F2023] border border-[#232427] flex items-center justify-center text-xs font-semibold text-[#F4F4F5] shrink-0">
               {currentUser?.name
                 ? currentUser.name
                     .split(' ')
                     .map((n) => n[0])
                     .join('')
                     .substring(0, 2)
-                : 'U'}
+                    .toUpperCase()
+                : 'HR'}
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{currentUser?.name || 'Authorized Officer'}</p>
-              <p className="text-[11px] text-teal-400 truncate">{formatRoleLabel(currentRole)}</p>
-            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[#F4F4F5] truncate leading-tight">
+                  {currentUser?.name || 'Hamsaraj'}
+                </p>
+                <p className="text-[11px] text-[#71717A] truncate leading-tight mt-0.5">
+                  {formatRoleLabel(currentRole)}
+                </p>
+              </div>
+            )}
           </div>
-          <button
-            onClick={logout}
-            title="Sign Out"
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800/60 rounded-md transition"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+
+          {!collapsed && (
+            <button
+              onClick={logout}
+              title="Sign Out"
+              className="px-2 py-1 text-[11px] font-medium text-[#A1A1AA] hover:text-white bg-[#1A1B1E] hover:bg-[#232427] border border-[#232427] rounded-md transition-colors shrink-0"
+            >
+              Sign out
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -222,8 +317,8 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 border-r border-slate-800 shadow-lg z-30">
+      {/* Desktop Persistent Sidebar Panel */}
+      <aside className={`hidden md:block shrink-0 h-full transition-all duration-200 ${collapsed ? 'w-[68px]' : 'w-[250px]'}`}>
         {navContent}
       </aside>
 
@@ -231,10 +326,10 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#142B45] shadow-2xl">
+          <div className="relative flex-1 flex flex-col max-w-xs w-full p-2">
             {navContent}
           </div>
         </div>
@@ -242,3 +337,5 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     </>
   );
 };
+
+export default Sidebar;

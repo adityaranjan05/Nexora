@@ -4,34 +4,71 @@
 
 @layer base {
   :root {
-    --color-navy: #142B45;
-    --color-teal: #0F9D8A;
+    --bg-canvas: #0A0A0B;
+    --bg-panel: #0F1011;
+    --bg-card: #151618;
+    --bg-card-hover: #1A1B1E;
+    --bg-active: #1F2023;
+    --border: #232427;
+    --text-primary: #F4F4F5;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --accent: #00E676;
+    --accent-purple: #7C3AED;
+  }
+
+  * {
+    border-color: #232427;
   }
 
   body {
-    background-color: #F8FAFC;
-    color: #1E293B;
+    background-color: #0A0A0B;
+    color: #F4F4F5;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-feature-settings: 'tnum' on, 'zero' on;
   }
 }
 
-/* Custom scrollbars for data tables and panels */
+/* Custom scrollbars matching takeUforward dark UI */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
+  background: #232427;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #323438;
+}
+
+/* Hairline section divider header */
+.section-hairline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.section-hairline::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #232427;
 }
 
 /* Print styling for official report generation */
@@ -42,8 +79,11 @@
   main {
     padding: 0 !important;
     margin: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
   body {
     background: #ffffff !important;
+    color: #000000 !important;
   }
 }

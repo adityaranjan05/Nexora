@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Bell, 
   RefreshCw, 
   Calendar, 
-  ChevronRight, 
   Filter, 
   Menu, 
-  Check, 
   ExternalLink,
-  ShieldCheck,
-  Building
+  Sparkles,
+  Flame,
+  Coins,
+  ChevronDown,
+  User,
+  PanelLeft
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
-export const TopNavbar = ({ setMobileOpen }) => {
+export const TopNavbar = ({ setMobileOpen, sidebarCollapsed, setSidebarCollapsed }) => {
   const { 
-    alerts, 
+    alerts = [], 
     markAlertRead, 
     markAllAlertsRead, 
     selectedDateRange, 
@@ -27,30 +30,32 @@ export const TopNavbar = ({ setMobileOpen }) => {
     setCommandPaletteOpen,
     isRefreshing,
     triggerRefresh,
-    currentUser
+    cases = []
   } = useApp();
 
+  const { user: currentUser } = useAuth();
   const [showAlertMenu, setShowAlertMenu] = useState(false);
-  const location = useLocation();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const alertMenuRef = useRef(null);
+  const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
   const unreadAlerts = alerts.filter((a) => !a.isRead);
+  const overdueCount = cases.filter((c) => c.isOverdue || (c.status !== 'disposed' && c.expectedDisposalDate && new Date(c.expectedDisposalDate) < new Date())).length;
 
-  // Derive breadcrumb from pathname
-  const pathParts = location.pathname.split('/').filter(Boolean);
-  const getBreadcrumbTitle = (part) => {
-    switch (part) {
-      case 'cases': return 'Case Records';
-      case 'institutions': return 'Institutions';
-      case 'overlaps': return 'Overlap Coordination Centre';
-      case 'alerts': return 'Operational Alerts';
-      case 'match-review': return 'Institution Match Review';
-      case 'imports': return 'Bulk Case Ingestion';
-      case 'reports': return 'Compliance & Performance Analytics';
-      case 'admin': return 'System Administration & SLA Rules';
-      default: return part;
-    }
-  };
+  // Close menus on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (alertMenuRef.current && !alertMenuRef.current.contains(event.target)) {
+        setShowAlertMenu(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const bureauOptions = [
     'All Bureaus',
@@ -63,183 +68,173 @@ export const TopNavbar = ({ setMobileOpen }) => {
   ];
 
   const dateRangeOptions = [
-    'Last 30 Days',
     'Current Quarter (Q3 2026)',
+    'Last 30 Days',
     'FY 2026-27 (Year to Date)',
     'All Time',
   ];
 
   return (
-    <header className="sticky top-0 z-20 bg-gradient-to-r from-[#081A2B] via-[#0B2032] to-[#101C35] text-[#EAF2F8] border-b border-[#20374B] shadow-subtle px-4 sm:px-6 py-3">
-      <div className="flex items-center justify-between gap-4">
-        {/* Left: Mobile trigger & Breadcrumbs */}
-        <div className="flex items-center space-x-3 min-w-0">
+    <header className="bg-[#0F1011] border border-[#232427] rounded-[16px] px-3 sm:px-4 py-2 shrink-0 select-none">
+      <div className="flex items-center justify-between gap-3">
+        {/* Left: Mobile trigger & Deep Purple Statutory Notice Banner (matching Image 1 FRI45 SALE strip) */}
+        <div className="flex items-center space-x-2.5 min-w-0">
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+            className="md:hidden p-1.5 text-[#A1A1AA] hover:text-white rounded-lg hover:bg-[#1A1B1E] transition-colors"
+            aria-label="Open mobile menu"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <nav className="flex items-center space-x-1.5 text-xs font-medium text-slate-500 overflow-hidden">
-            <Link to="/" className="text-white hover:text-teal-400 shrink-0 font-semibold flex items-center gap-1">
-              <span>Nexora</span>
-            </Link>
-            {pathParts.length === 0 ? (
-              <>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="text-slate-900 font-semibold truncate">Complaint Monitoring Overview</span>
-              </>
-            ) : (
-              pathParts.map((part, index) => {
-                const url = `/${pathParts.slice(0, index + 1).join('/')}`;
-                const isLast = index === pathParts.length - 1;
-                return (
-                  <React.Fragment key={url}>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    {isLast ? (
-                      <span className="text-slate-900 font-semibold truncate">
-                        {getBreadcrumbTitle(part)}
-                      </span>
-                    ) : (
-                      <Link to={url} className="hover:text-teal-700 truncate">
-                        {getBreadcrumbTitle(part)}
-                      </Link>
-                    )}
-                  </React.Fragment>
-                );
-              })
-            )}
-          </nav>
+          {/* Slim Deep Purple Banner with Green Pill CTA */}
+          <div className="hidden sm:flex items-center space-x-2.5 px-3 py-1 bg-gradient-to-r from-[#2E1065]/90 via-[#3B0764]/70 to-[#1E1B4B]/80 border border-[#581C87]/40 rounded-full text-xs">
+            <span className="font-bold text-[11px] uppercase tracking-wider text-[#E9D5FF] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#C084FC]" />
+              <span>Statutory SLA Notice:</span>
+            </span>
+            <span className="text-[11px] text-[#D8B4FE] hidden lg:inline">
+              {overdueCount > 0 ? `${overdueCount} cases exceed disposal deadline` : 'All council dockets within statutory norms'}
+            </span>
+            <button
+              onClick={() => navigate('/cases?status=escalated')}
+              className="px-2.5 py-0.5 rounded-full bg-[#00E676] hover:bg-[#00c864] text-black font-bold text-[10px] tracking-wide transition-all shadow-xs"
+            >
+              REVIEW NOW &rarr;
+            </button>
+          </div>
         </div>
 
-        {/* Center: Global Search Bar trigger */}
-        <div className="hidden lg:flex flex-1 max-w-md mx-2">
+        {/* Right: Search, Bureau Dropdown, Quarter Selector, Alerts & User Controls */}
+        <div className="flex items-center space-x-2 sm:space-x-2.5 shrink-0">
+          {/* Global Search Button */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-slate-400 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+            className="p-1.5 text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#1A1B1E] rounded-lg border border-transparent hover:border-[#232427] transition-colors flex items-center gap-1.5 text-xs"
+            title="Search (⌘K)"
           >
-            <div className="flex items-center space-x-2">
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-              <span>Search cases, institutions, PID (e.g. 1-438920194)...</span>
-            </div>
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-500 bg-white border border-slate-200 rounded shadow-xs">
+            <Search className="w-4 h-4" />
+            <span className="hidden xl:inline text-[#71717A] text-[11px]">Search...</span>
+            <kbd className="hidden xl:inline-block px-1 py-0.2 text-[9px] font-mono text-[#71717A] bg-[#151618] border border-[#232427] rounded">
               ⌘K
             </kbd>
           </button>
-        </div>
 
-        {/* Right: Actions, Filters, Notifications */}
-        <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
-          {/* Quick Bureau Filter Dropdown */}
-          <div className="hidden xl:flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700">
-            <Filter className="w-3.5 h-3.5 text-teal-600" />
+          {/* Bureau Filter Dropdown */}
+          <div className="hidden lg:flex items-center space-x-1.5 bg-[#151618] border border-[#232427] hover:border-[#2D2E32] rounded-lg px-2.5 py-1 text-xs text-[#A1A1AA] transition-colors">
+            <Filter className="w-3 h-3 text-[#71717A]" />
             <select
               value={selectedBureauFilter}
               onChange={(e) => setSelectedBureauFilter(e.target.value)}
-              className="bg-transparent border-none text-xs font-medium text-slate-700 focus:outline-none cursor-pointer"
+              className="bg-transparent border-none text-[11px] font-medium text-[#F4F4F5] focus:outline-none cursor-pointer pr-1"
             >
               {bureauOptions.map((b) => (
-                <option key={b} value={b}>{b}</option>
+                <option key={b} value={b} className="bg-[#151618] text-[#F4F4F5]">{b}</option>
               ))}
             </select>
           </div>
 
-          {/* Date Range Selector */}
-          <div className="hidden sm:flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          {/* Quarter / Date Range Selector */}
+          <div className="hidden md:flex items-center space-x-1.5 bg-[#151618] border border-[#232427] hover:border-[#2D2E32] rounded-lg px-2.5 py-1 text-xs text-[#A1A1AA] transition-colors">
+            <Calendar className="w-3 h-3 text-[#71717A]" />
             <select
               value={selectedDateRange}
               onChange={(e) => setSelectedDateRange(e.target.value)}
-              className="bg-transparent border-none text-xs font-medium text-slate-700 focus:outline-none cursor-pointer"
+              className="bg-transparent border-none text-[11px] font-medium text-[#F4F4F5] focus:outline-none cursor-pointer pr-1"
             >
               {dateRangeOptions.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d} className="bg-[#151618] text-[#F4F4F5]">{d}</option>
               ))}
             </select>
           </div>
 
-          {/* Refresh Action */}
+          {/* Live Sync Action */}
           <button
             onClick={triggerRefresh}
             disabled={isRefreshing}
-            title="Refresh All AICTE Bureau Feeds"
-            className="p-2 text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Refresh Central Registry"
+            className="p-1.5 text-[#A1A1AA] hover:text-[#00E676] hover:bg-[#1A1B1E] rounded-lg transition-colors border border-transparent hover:border-[#232427]"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#00E676]' : ''}`} />
           </button>
 
-          {/* Notifications Bell with Popover */}
-          <div className="relative">
+          {/* Notification Bell Popover */}
+          <div className="relative" ref={alertMenuRef}>
             <button
               onClick={() => setShowAlertMenu(!showAlertMenu)}
-              className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              className="relative p-1.5 text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#1A1B1E] rounded-lg transition-colors border border-transparent hover:border-[#232427]"
               title="Operational Alerts"
             >
               <Bell className="w-4 h-4" />
               {unreadAlerts.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-600 rounded-full ring-2 ring-white animate-pulse" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#FF4D79] rounded-full ring-2 ring-[#0F1011]" />
               )}
             </button>
 
             {showAlertMenu && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-elevated border border-slate-200 z-50 overflow-hidden">
-                <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0F1011] rounded-2xl shadow-modal border border-[#232427] z-50 overflow-hidden">
+                <div className="p-3.5 bg-[#151618] border-b border-[#232427] flex items-center justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Coordination Alerts</h4>
-                    <p className="text-[11px] text-slate-500">
+                    <h4 className="text-xs font-bold text-[#F4F4F5]">Regulatory Coordination Alerts</h4>
+                    <p className="text-[11px] text-[#71717A]">
                       {unreadAlerts.length} pending actionable notices
                     </p>
                   </div>
                   {unreadAlerts.length > 0 && (
                     <button
                       onClick={markAllAlertsRead}
-                      className="text-[11px] text-teal-700 hover:text-teal-900 font-semibold"
+                      className="text-[11px] text-[#00E676] hover:underline font-semibold"
                     >
                       Mark all read
                     </button>
                   )}
                 </div>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                  {alerts.slice(0, 5).map((alert) => (
-                    <div
-                      key={alert.id}
-                      onClick={() => {
-                        markAlertRead(alert.id);
-                        if (alert.relatedCaseId) {
-                          setShowAlertMenu(false);
-                          navigate(`/cases/${encodeURIComponent(alert.relatedCaseId)}`);
-                        }
-                      }}
-                      className={`p-3 text-xs hover:bg-slate-50 cursor-pointer transition-colors ${
-                        !alert.isRead ? 'bg-amber-50/40' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={`font-semibold ${alert.severity === 'critical' ? 'text-rose-700' : 'text-slate-800'}`}>
-                          {alert.title}
-                        </span>
-                        {!alert.isRead && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0 mt-1" />
-                        )}
-                      </div>
-                      <p className="text-slate-600 text-[11px] mt-1 line-clamp-2">
-                        {alert.description}
-                      </p>
-                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
-                        <span>{alert.institutionName || 'AICTE Central Registry'}</span>
-                        <span>{alert.timestamp}</span>
-                      </div>
+                <div className="max-h-80 overflow-y-auto divide-y divide-[#232427]">
+                  {alerts.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-[#71717A]">
+                      No operational notifications at this time.
                     </div>
-                  ))}
+                  ) : (
+                    alerts.slice(0, 5).map((alert) => (
+                      <div
+                        key={alert.id}
+                        onClick={() => {
+                          markAlertRead(alert.id);
+                          if (alert.relatedCaseId) {
+                            setShowAlertMenu(false);
+                            navigate(`/cases/${encodeURIComponent(alert.relatedCaseId)}`);
+                          }
+                        }}
+                        className={`p-3 text-xs hover:bg-[#151618] cursor-pointer transition-colors ${
+                          !alert.isRead ? 'bg-[#151618]/60' : ''
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className={`font-semibold ${alert.severity === 'critical' ? 'text-[#FF4D79]' : 'text-[#F4F4F5]'}`}>
+                            {alert.title}
+                          </span>
+                          {!alert.isRead && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF4D79] shrink-0 mt-1" />
+                          )}
+                        </div>
+                        <p className="text-[#A1A1AA] text-[11px] mt-1 line-clamp-2">
+                          {alert.description}
+                        </p>
+                        <div className="mt-1.5 flex items-center justify-between text-[10px] text-[#71717A]">
+                          <span className="truncate max-w-[180px]">{alert.institutionName || 'AICTE Central Registry'}</span>
+                          <span>{alert.timestamp}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
-                <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center">
+                <div className="p-2.5 bg-[#151618] border-t border-[#232427] text-center">
                   <Link
                     to="/alerts"
                     onClick={() => setShowAlertMenu(false)}
-                    className="text-xs font-semibold text-teal-700 hover:text-teal-900 inline-flex items-center gap-1"
+                    className="text-xs font-semibold text-[#00E676] hover:underline inline-flex items-center gap-1"
                   >
                     <span>View all operational alerts</span>
                     <ExternalLink className="w-3 h-3" />
@@ -249,15 +244,23 @@ export const TopNavbar = ({ setMobileOpen }) => {
             )}
           </div>
 
-          {/* Search Trigger Icon for Small Screens */}
+          {/* Quick Stats Chips (matching Flame / Coin / Plus pill in Image 1) */}
+          <div className="hidden sm:flex items-center space-x-1.5 bg-[#151618] border border-[#232427] px-2 py-1 rounded-lg text-xs font-mono">
+            <Flame className="w-3.5 h-3.5 text-[#F59E0B]" />
+            <span className="text-[11px] font-bold text-[#F4F4F5]">Q3</span>
+          </div>
+
+          {/* Primary CTA Button (matching "+ Plus" in Image 1) */}
           <button
-            onClick={() => setCommandPaletteOpen(true)}
-            className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+            onClick={() => navigate('/cases')}
+            className="hidden sm:inline-flex items-center px-2.5 py-1 bg-[#00E676] hover:bg-[#00c864] text-black font-bold text-xs rounded-lg transition-all shadow-xs"
           >
-            <Search className="w-4 h-4" />
+            + Case
           </button>
         </div>
       </div>
     </header>
   );
 };
+
+export default TopNavbar;
