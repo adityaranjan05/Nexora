@@ -16,37 +16,41 @@ export const CommandPalette = () => {
 
   if (!commandPaletteOpen) return null;
 
+  const safeText = (value) => String(value ?? '').toLowerCase();
+
   const q = query.toLowerCase().trim();
 
   const filteredCases = q
-    ? cases.filter(
-        (c) =>
-          c.id.toLowerCase().includes(q) ||
-          c.permanentId.toLowerCase().includes(q) ||
-          c.institutionName.toLowerCase().includes(q) ||
-          c.subject.toLowerCase().includes(q) ||
-          c.bureau.toLowerCase().includes(q)
-      ).slice(0, 5)
-    : cases.slice(0, 3);
+  ? cases.filter(
+      (c) =>
+        safeText(c.id).includes(q) ||
+        safeText(c.permanentId).includes(q) ||
+        safeText(c.institutionName).includes(q) ||
+        safeText(c.subject).includes(q) ||
+        safeText(c.bureau).includes(q)
+    ).slice(0, 5)
+  : cases.slice(0, 3);
 
   const filteredInstitutions = q
-    ? institutions.filter(
-        (i) =>
-          i.name.toLowerCase().includes(q) ||
-          i.permanentId.toLowerCase().includes(q) ||
-          i.city.toLowerCase().includes(q) ||
-          i.region.toLowerCase().includes(q)
-      ).slice(0, 4)
-    : institutions.slice(0, 2);
+  ? institutions.filter(
+      (i) =>
+        safeText(i.name).includes(q) ||
+        safeText(i.permanentId).includes(q) ||
+        safeText(i.city).includes(q) ||
+        safeText(i.region).includes(q)
+    ).slice(0, 4)
+  : institutions.slice(0, 2);
 
   const filteredOverlaps = q
-    ? overlaps.filter(
-        (o) =>
-          o.id.toLowerCase().includes(q) ||
-          o.institutionName.toLowerCase().includes(q) ||
-          o.triggerReason.toLowerCase().includes(q)
-      ).slice(0, 3)
-    : overlaps.slice(0, 2);
+  ? overlaps.filter(
+      (o) =>
+        safeText(o.id).includes(q) ||
+        safeText(o._id).includes(q) ||
+        safeText(`OVL-${String(o._id ?? '').slice(-6).toUpperCase()}`).includes(q) ||
+        safeText(o.institutionName).includes(q) ||
+        safeText(o.triggerReason).includes(q)
+    ).slice(0, 3)
+  : overlaps.slice(0, 2);
 
   const handleSelectCase = (caseId) => {
     setCommandPaletteOpen(false);
@@ -134,8 +138,8 @@ export const CommandPalette = () => {
               <div className="space-y-1">
                 {filteredInstitutions.map((inst) => (
                   <div
-                    key={inst.id}
-                    onClick={() => handleSelectInstitution(inst.id)}
+                    key={inst._id}
+                    onClick={() => handleSelectInstitution(inst._id)}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 cursor-pointer group transition-colors"
                   >
                     <div className="min-w-0 pr-2">
