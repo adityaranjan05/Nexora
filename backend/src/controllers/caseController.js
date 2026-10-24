@@ -628,9 +628,12 @@ export const addBureauCaseAction = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Forbidden: Case outside your bureau' });
     }
 
+    const isPublic = req.body.isPublic !== undefined ? Boolean(req.body.isPublic) : (actionType !== 'note');
+
     const action = await CaseAction.create({
       case: c._id,
       actionType,
+      isPublic,
       performedBy: req.user._id,
       performedByBureau: req.user.bureau?._id,
       remarks,

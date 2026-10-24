@@ -26,7 +26,7 @@ import { OverlapBadge } from '../../../shared/components/OverlapBadge';
 import { SkeletonLoader } from '../../../shared/components/SkeletonLoader';
 
 export function OfficerCaseDetailPage() {
-  const { caseId } = useParams();
+  const { id: caseId } = useParams();
   const navigate = useNavigate();
 
   // Modals state
