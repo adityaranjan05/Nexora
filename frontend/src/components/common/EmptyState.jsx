@@ -9,16 +9,16 @@ export const EmptyState = ({
   onAction,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-lg border border-dashed border-slate-300">
-      <div className="p-3 bg-slate-100 rounded-full text-slate-500 mb-3">
+    <div className="flex flex-col items-center justify-center p-10 text-center bg-[#151618] rounded-xl border border-dashed border-[#232427] text-[#F4F4F5]">
+      <div className="p-3 bg-[#0F1011] border border-[#232427] rounded-full text-[#71717A] mb-3">
         <Icon className="w-6 h-6" />
       </div>
-      <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-      <p className="mt-1 text-xs text-slate-500 max-w-sm">{description}</p>
+      <h3 className="text-sm font-semibold text-[#F4F4F5]">{title}</h3>
+      <p className="mt-1 text-xs text-[#71717A] max-w-sm">{description}</p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="mt-4 px-3.5 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-md hover:bg-teal-100 transition-colors"
+          className="mt-4 px-3.5 py-1.5 text-xs font-semibold text-[#00E676] bg-[#00E676]/10 border border-[#00E676]/30 rounded-lg hover:bg-[#00E676]/20 transition-colors"
         >
           {actionLabel}
         </button>
@@ -26,3 +26,5 @@ export const EmptyState = ({
     </div>
   );
 };
+
+export default EmptyState;

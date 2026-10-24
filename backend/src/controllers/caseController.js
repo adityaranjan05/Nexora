@@ -4,7 +4,9 @@ import { CaseLink } from '../models/CaseLink.js';
 import { Institution } from '../models/Institution.js';
 import { Bureau } from '../models/Bureau.js';
 import { OverlapGroup } from '../models/OverlapGroup.js';
+import { SlaRule } from '../models/SlaRule.js';
 import { checkInstitutionOverlap } from '../services/overlap.js';
+import { generateCaseId } from '../services/ingestion.js';
 
 export const getCases = async (req, res, next) => {
   try {
@@ -384,6 +386,118 @@ export const linkCases = async (req, res, next) => {
     ]);
 
     res.status(201).json({ success: true, message: 'Cases linked successfully', data: link });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createCase = async (req, res, next) => {
+  try {
+    const {
+      studentName,
+      enrollmentNo,
+      email,
+      phone,
+      institutionId,
+      rawInstitutionName,
+      rawState,
+      category = 'Fee Issues',
+      subject,
+      description,
+      sourceSystem = 'GEN',
+      evidenceFiles = [],
+    } = req.body;
+
+    const caseId = await generateCaseId(sourceSystem);
+
+    // Auto-route bureau by category config
+    const categoryBureauCodeMap = {
+      'Fee Issues': 'RB',
+      'Fake Documents': 'APPROVAL',
+      'Infrastructure': 'ACADEMIC',
+      'Faculty Shortage': 'PGRC',
+      'Admission Irregularities': 'RO_NORTH',
+    };
+    const targetCode = categoryBureauCodeMap[category] || 'RB';
+    let bureau = await Bureau.findOne({ code: targetCode });
+    if (!bureau) {
+      bureau = await Bureau.findOne();
+    }
+
+    // Institution resolution
+    let institution = null;
+    let institutionDoc = null;
+    if (institutionId) {
+      institutionDoc = await Institution.findById(institutionId);
+      if (institutionDoc) institution = institutionDoc._id;
+    }
+
+    const sla = await SlaRule.findOne({ category });
+    const daysToDispose = sla?.daysToDispose || 30;
+    const receivedDate = new Date();
+    const expectedDisposalDate = new Date(receivedDate.getTime() + daysToDispose * 24 * 60 * 60 * 1000);
+
+    const fullDescription = subject ? `[${subject}] ${description}` : description;
+
+    const newCase = await Case.create({
+      caseId,
+      sourceSystem: 'STUDENT_PORTAL',
+      sourceCaseRef: caseId,
+      institution: institution || undefined,
+      rawInstitutionName: institutionDoc?.name || rawInstitutionName || 'Unknown Institution',
+      rawState: institutionDoc?.region || institutionDoc?.state || rawState || 'Central',
+      rawCity: institutionDoc?.city || '',
+      matchStatus: institution ? 'matched' : 'unmatched',
+      matchScore: institution ? 100 : 0,
+      category,
+      description: fullDescription,
+      complainantType: 'Student',
+      receivedDate,
+      status: 'pending',
+      currentBureau: bureau ? bureau._id : undefined,
+      lastActionText: `Case registered via Student Intake (${studentName || 'Student'} / ${enrollmentNo || 'N/A'})`,
+      lastActionDate: new Date(),
+      nextActionText: 'Pending initial intake review & allocation',
+      expectedDisposalDate,
+    });
+
+    await CaseAction.create({
+      case: newCase._id,
+      actionType: 'received',
+      performedBy: req.user?._id,
+      toBureau: bureau ? bureau._id : undefined,
+      remarks: `Registered from Student Intake. Student: ${studentName || 'Student'} (${enrollmentNo || 'N/A'}, ${email || 'N/A'}, ${phone || 'N/A'}). Attached files: ${evidenceFiles.length}.`,
+      timestamp: new Date(),
+    });
+
+    // Check overlap
+    let hasOverlap = false;
+    let overlapSeverity = null;
+    if (institution) {
+      try {
+        const overlapResult = await checkInstitutionOverlap(institution);
+        if (overlapResult && overlapResult.group) {
+          hasOverlap = true;
+          overlapSeverity = overlapResult.group.severity;
+        }
+      } catch (err) {
+        console.warn('Overlap check non-blocking warning:', err.message);
+      }
+    }
+
+    const populatedCase = await Case.findById(newCase._id)
+      .populate('institution')
+      .populate('currentBureau');
+
+    res.status(201).json({
+      success: true,
+      message: 'Complaint docket successfully registered',
+      data: {
+        ...populatedCase.toObject(),
+        hasOverlap,
+        overlapSeverity,
+      },
+    });
   } catch (error) {
     next(error);
   }
