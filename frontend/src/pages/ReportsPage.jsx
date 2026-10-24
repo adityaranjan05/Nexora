@@ -77,10 +77,10 @@ export const ReportsPage = () => {
   const totalAgeingCases = ageingData?.data?.cases?.length || 0;
 
   const ageingColors = {
-    '0-15 days': 'bg-[#19D3A2]',
-    '16-30 days': 'bg-[#6C7BFF]',
-    '31-60 days': 'bg-[#F59E0B]',
-    '60+ days': 'bg-[#FF4D79]',
+    '0-15 days': 'bg-blue-500',
+    '16-30 days': 'bg-blue-500',
+    '31-60 days': 'bg-amber-500',
+    '60+ days': 'bg-rose-500/100',
   };
 
   // Format bureau report items
@@ -110,108 +110,120 @@ export const ReportsPage = () => {
     })
     .filter((b) => (bureauFilter === 'All' ? true : b.bureau === bureauFilter));
 
+
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#0F1011] border border-[#232427] rounded-panel p-4 sm:p-6 space-y-5 select-none-off text-[#F4F4F5]">
+    <div className="space-y-6 text-slate-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#F4F4F5] font-sans tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             Statutory Compliance & Performance Analytics
           </h1>
-          <p className="text-xs sm:text-sm text-[#71717A] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
             Audit-ready reporting across AICTE Bureaus, case ageing buckets, regional caseloads, and disposal indices.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2.5 no-print">
+        <div className="flex flex-wrap items-center gap-2.5 no-print">
           <button
             onClick={handlePrint}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-[#F4F4F5] bg-[#151618] border border-[#232427] rounded-lg hover:bg-[#1A1B1E] transition-colors"
+            className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-slate-300 bg-white border border-slate-700/80 rounded-lg hover:bg-[#0B1730] shadow-subtle transition-colors"
           >
-            <Printer className="w-3.5 h-3.5 text-[#71717A]" />
-            <span>Print Report</span>
+            <Printer className="w-3.5 h-3.5 text-slate-400" />
+            <span>Print Report / PDF</span>
           </button>
 
           <button
             onClick={handleExportCSV}
             disabled={isExporting}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-black bg-[#00E676] hover:bg-[#00c864] disabled:opacity-50 rounded-lg shadow-sm transition-colors"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
           >
             {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            <span>Export CSV &rarr;</span>
+            <span>Export Analytics CSV</span>
           </button>
         </div>
       </div>
 
       {/* Filter Controls Bar */}
-      <div className="bg-[#151618] rounded-card border border-[#232427] p-4 flex flex-wrap items-center gap-3 text-xs no-print">
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-700/80 bg-[#101D35] p-4 text-xs shadow-subtle no-print">
         <div>
-          <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Time Horizon</label>
+          <label className="block text-[10px] font-semibold text-slate-400 mb-1">Time Horizon</label>
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#0F1011] border border-[#232427] rounded-lg text-[#F4F4F5] focus:outline-none focus:border-[#00E676]"
+            className="px-2.5 py-1.5 bg-[#0B1730] border border-slate-700/80 rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
-            <option value="Last 30 Days" className="bg-[#151618]">Last 30 Days</option>
-            <option value="Current Quarter (Q3 2026)" className="bg-[#151618]">Current Quarter (Q3 2026)</option>
-            <option value="FY 2026-27" className="bg-[#151618]">FY 2026-27 (Year to Date)</option>
+            <option value="Last 30 Days">Last 30 Days</option>
+            <option value="Current Quarter (Q3 2026)">Current Quarter (Q3 2026)</option>
+            <option value="FY 2026-27">FY 2026-27 (Year to Date)</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Bureau Focus</label>
+          <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bureau Focus</label>
           <select
             value={bureauFilter}
             onChange={(e) => setBureauFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#0F1011] border border-[#232427] rounded-lg text-[#F4F4F5] focus:outline-none focus:border-[#00E676]"
+            className="px-2.5 py-1.5 bg-[#0B1730] border border-slate-700/80 rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
-            <option value="All" className="bg-[#151618]">All Bureaus Combined</option>
-            <option value="Approval Bureau" className="bg-[#151618]">Approval Bureau</option>
-            <option value="Grievance Redressal Cell" className="bg-[#151618]">Grievance Redressal Cell</option>
-            <option value="Regulation Bureau" className="bg-[#151618]">Regulation Bureau</option>
-            <option value="RIFD Bureau" className="bg-[#151618]">RIFD Bureau</option>
-            <option value="Administration & Vigilance" className="bg-[#151618]">Administration & Vigilance</option>
-            <option value="Student Development Cell" className="bg-[#151618]">Student Development Cell</option>
+            <option value="All">All Bureaus Combined</option>
+            <option value="Approval Bureau">Approval Bureau</option>
+            <option value="Public Grievance Redressal Cell">
+              Public Grievance Redressal Cell
+            </option>
+            <option value="Regulatory Bureau">Regulatory Bureau</option>
+            <option value="Academic Bureau">Academic Bureau</option>
+            <option value="Northern Regional Office">Northern Regional Office</option>
+            <option value="Southern Regional Office">Southern Regional Office</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-[10px] font-semibold text-[#71717A] mb-1">Export Target</label>
+          <label className="block text-[10px] font-semibold text-slate-400 mb-1">Export Target</label>
           <select
             value={reportType}
             onChange={(e) => setReportType(e.target.value)}
-            className="px-2.5 py-1.5 bg-[#0F1011] border border-[#232427] rounded-lg text-[#F4F4F5] focus:outline-none focus:border-[#00E676]"
+            className="px-2.5 py-1.5 bg-[#0B1730] border border-slate-700/80 rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
-            <option value="bureau" className="bg-[#151618]">Bureau Performance Report</option>
-            <option value="ageing" className="bg-[#151618]">Ageing & SLA Report</option>
-            <option value="region" className="bg-[#151618]">Regional Caseload Report</option>
-            <option value="disposal-rate" className="bg-[#151618]">Disposal Rate Report</option>
+            <option value="bureau">Bureau Performance Report</option>
+            <option value="ageing">Ageing & SLA Report</option>
+            <option value="region">Regional Caseload Report</option>
+            <option value="disposal-rate">Disposal Rate Report</option>
           </select>
         </div>
 
         {disposalData?.data?.overallRate && (
-          <div className="ml-auto flex items-center space-x-2 pl-4 border-l border-[#232427]">
-            <span className="text-[#71717A] font-medium">Council Disposal Rate:</span>
-            <span className="font-mono font-bold text-[#00E676] text-sm">{disposalData.data.overallRate}</span>
+          <div className="ml-auto flex items-center space-x-2 pl-4 border-l border-slate-700/70">
+            <span className="text-slate-400 font-medium">Council Disposal Rate:</span>
+            <span className="font-mono font-bold text-blue-300 text-sm">{disposalData.data.overallRate}</span>
           </div>
         )}
       </div>
 
+      {/* Printable Report Header for Official Submissions */}
+      <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6 text-slate-900">
+        <h2 className="text-xl font-bold uppercase tracking-tight text-slate-100">
+          All India Council for Technical Education (AICTE)
+        </h2>
+        <p className="text-xs text-slate-400">Integrated Institutional Grievance & Complaint Tracking Cell</p>
+        <p className="text-xs text-slate-400 mt-1">Generated: {new Date().toLocaleString()} • Confidential Administration Record</p>
+      </div>
+
       {/* Ageing Buckets Analysis Card */}
-      <div className="bg-[#151618] rounded-card border border-[#232427] p-5 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#232427]">
+      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/70 pb-3">
           <div>
-            <h3 className="text-sm font-bold text-[#F4F4F5]">Case Ageing Analysis & SLA Buckets</h3>
-            <p className="text-xs text-[#71717A]">Classification of pending dockets by calendar days since registration</p>
+            <h3 className="text-sm font-bold text-slate-100">Case Ageing Analysis & SLA Buckets</h3>
+            <p className="text-xs text-slate-400">Classification of pending dockets by calendar days since registration</p>
           </div>
-          <span className="text-xs font-mono font-bold text-[#A1A1AA] bg-[#0F1011] px-2 py-0.5 rounded border border-[#232427]">
+          <span className="text-xs font-mono font-bold text-slate-300 bg-slate-700/60 px-2 py-0.5 rounded">
             {totalAgeingCases} Total Active Dockets
           </span>
         </div>
 
         {isAgeingLoading ? (
-          <div className="py-8 flex justify-center items-center text-[#71717A] text-xs">
-            <Loader2 className="w-5 h-5 animate-spin mr-2 text-[#00E676]" />
+          <div className="py-8 flex justify-center items-center text-slate-400 text-xs">
+            <Loader2 className="w-5 h-5 animate-spin mr-2 text-blue-400" />
             Loading ageing distribution...
           </div>
         ) : (
@@ -219,19 +231,19 @@ export const ReportsPage = () => {
             {ageingSummary.map((bucket) => {
               const count = bucket.count || 0;
               const pct = totalAgeingCases > 0 ? Math.round((count / totalAgeingCases) * 100) : 0;
-              const color = ageingColors[bucket.name] || 'bg-[#71717A]';
+              const color = ageingColors[bucket.name] || 'bg-slate-400';
 
               return (
-                <div key={bucket.name} className="p-4 rounded-lg bg-[#0F1011] border border-[#232427]">
+                <div key={bucket.name} className="p-4 rounded-lg bg-[#0B1730] border border-slate-700/80">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#A1A1AA] capitalize">{bucket.name}</span>
-                    <span className="font-mono text-xs font-bold text-[#F4F4F5]">{pct}%</span>
+                    <span className="text-xs font-semibold text-slate-400 capitalize">{bucket.name}</span>
+                    <span className="font-mono text-xs font-bold text-slate-100">{pct}%</span>
                   </div>
-                  <p className="text-2xl font-bold font-mono text-[#F4F4F5] mt-2">{count}</p>
-                  <div className="w-full bg-[#1F2023] h-1.5 rounded-full overflow-hidden mt-2">
+                  <p className="text-2xl font-bold font-mono text-slate-100 mt-2">{count}</p>
+                  <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden mt-2">
                     <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-[11px] text-[#71717A] mt-1 block">Active Inquiries</span>
+                  <span className="text-[11px] text-slate-400 mt-1 block">Active Inquiries</span>
                 </div>
               );
             })}
@@ -240,27 +252,27 @@ export const ReportsPage = () => {
       </div>
 
       {/* Bureau-wise Detailed Performance Table */}
-      <div className="bg-[#151618] rounded-card border border-[#232427] overflow-hidden">
-        <div className="p-4 border-b border-[#232427] bg-[#0F1011] flex items-center justify-between">
+      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-700/80 bg-[#0B1730] p-4">
           <div>
-            <h3 className="text-sm font-bold text-[#F4F4F5]">Bureau & Cell Performance Index</h3>
-            <p className="text-xs text-[#71717A]">Comparative disposal rates and timeline compliance across council units</p>
+            <h3 className="text-sm font-bold text-slate-100">Bureau & Cell Performance Index</h3>
+            <p className="text-xs text-slate-400">Comparative disposal rates and timeline compliance across council units</p>
           </div>
-          <span className="text-xs font-mono font-semibold text-[#A1A1AA]">
+          <span className="text-xs font-mono font-semibold text-slate-400">
             {bureauRows.length} Reporting Units
           </span>
         </div>
 
         {isBureauLoading && (
-          <div className="py-12 flex justify-center items-center text-[#71717A] text-xs">
-            <Loader2 className="w-6 h-6 animate-spin mr-2 text-[#00E676]" />
+          <div className="py-12 flex justify-center items-center text-slate-400 text-xs">
+            <Loader2 className="w-6 h-6 animate-spin mr-2 text-blue-400" />
             Loading bureau metrics...
           </div>
         )}
 
         {isBureauError && (
-          <div className="p-6 bg-[#151618] text-[#FF4D79] text-xs flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 text-[#FF4D79]" />
+          <div className="p-6 bg-rose-500/10 text-rose-200 text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-400" />
             <span>Failed to load bureau performance report: {bureauError?.message}</span>
           </div>
         )}
@@ -268,7 +280,7 @@ export const ReportsPage = () => {
         {!isBureauLoading && !isBureauError && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#0F1011] border-b border-[#232427] text-[#71717A] font-semibold uppercase text-[11px]">
+              <thead className="bg-[#0B1730] border-b border-slate-700/80 text-slate-400 font-semibold uppercase text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Bureau / Cell Name</th>
                   <th className="py-3 px-4 text-center">Total Cases</th>
@@ -279,32 +291,32 @@ export const ReportsPage = () => {
                   <th className="py-3 px-4 text-right">Disposal Rate</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#232427] font-mono">
+              <tbody className="divide-y divide-slate-700/70 font-mono">
                 {bureauRows.length > 0 ? (
                   bureauRows.map((b) => (
-                    <tr key={b.code} className="hover:bg-[#1A1B1E] transition-colors">
-                      <td className="py-3 px-4 font-sans font-semibold text-[#F4F4F5]">
+                    <tr key={b.code} className="hover:bg-[#0B1730] transition-colors">
+                      <td className="py-3 px-4 font-sans font-semibold text-slate-100">
                         {b.bureau} ({b.code})
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-[#F4F4F5]">{b.total}</td>
-                      <td className="py-3 px-4 text-center text-[#8A99B5]">{b.pending}</td>
-                      <td className="py-3 px-4 text-center text-[#6C7BFF] font-medium">{b.process}</td>
-                      <td className="py-3 px-4 text-center text-[#19D3A2] font-bold">{b.disposed}</td>
+                      <td className="py-3 px-4 text-center font-bold text-slate-100">{b.total}</td>
+                      <td className="py-3 px-4 text-center text-slate-400">{b.pending}</td>
+                      <td className="py-3 px-4 text-center text-blue-300 font-medium">{b.process}</td>
+                      <td className="py-3 px-4 text-center text-blue-300 font-bold">{b.disposed}</td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                          b.escalated > 0 ? 'bg-[#FF4D79]/20 text-[#FF4D79]' : 'text-[#71717A]'
+                          b.escalated > 0 ? 'bg-rose-100 text-rose-200' : 'text-slate-400'
                         }`}>
                           {b.escalated}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <span className="font-bold text-[#00E676]">{b.disposalRate}%</span>
+                        <span className="font-bold text-blue-300">{b.disposalRate}%</span>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="py-8 text-center text-[#71717A] text-xs">
+                    <td colSpan="7" className="py-8 text-center text-slate-400 text-xs">
                       No bureau data available for the selected filters.
                     </td>
                   </tr>
