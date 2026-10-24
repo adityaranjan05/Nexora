@@ -13,7 +13,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname;
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
@@ -25,8 +25,18 @@ export function LoginPage() {
     try {
       setError('');
       setSubmitting(true);
-      await login(email, password);
-      navigate(from, { replace: true });
+      //await login(email, password);
+      //navigate(from, { replace: true });
+      const loggedInUser = await login(email, password);
+
+      const destination =
+        from && from !== '/login'
+          ? from
+          : loggedInUser?.role === 'student'
+            ? '/student'
+            : '/';
+
+      navigate(destination, { replace: true });
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Invalid credentials. Please try again.');
     } finally {

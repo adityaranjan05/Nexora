@@ -17,6 +17,7 @@ import { MatchReviewPage } from './pages/MatchReviewPage';
 import { ImportsPage } from './pages/ImportsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { AdministrationPage } from './pages/AdministrationPage';
+import { StudentComplaintsPage } from './pages/StudentComplaintsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,11 +37,25 @@ export function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/student"
+                element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <StudentComplaintsPage />
+                </ProtectedRoute>
+                }
+              />
               
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[
+                    'super_admin',
+                    'senior_management',
+                    'bureau_officer',
+                    'regional_officer',
+                    'data_operator',
+                ]}>
                     <AppLayout />
                   </ProtectedRoute>
                 }
