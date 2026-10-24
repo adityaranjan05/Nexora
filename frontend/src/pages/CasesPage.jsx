@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Search, 
   Download, 
+  Plus,
   Eye, 
   RotateCcw, 
   ChevronLeft, 
@@ -22,11 +23,29 @@ import { SlaIndicator } from '../components/common/SlaIndicator';
 import { OverlapBadge } from '../components/common/OverlapBadge';
 import { EmptyState } from '../components/common/EmptyState';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { StudentIntakeTab } from '../components/cases/student-intake/StudentIntakeTab';
+import { studentIntakeStore } from '../components/cases/student-intake/studentIntakeStore';
 
 export const CasesPage = () => {
   const { addToast } = useApp();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isStudentIntake = searchParams.get('tab') === 'student-intake';
+  const [unreviewedCount, setUnreviewedCount] = useState(() => studentIntakeStore.getUnreviewedCount());
+
+  useEffect(() => {
+    const handleUpdate = () => setUnreviewedCount(studentIntakeStore.getUnreviewedCount());
+    window.addEventListener('student-intake-update', handleUpdate);
+    return () => window.removeEventListener('student-intake-update', handleUpdate);
+  }, []);
+
+  useEffect(() => {
+    const s = searchParams.get('status');
+    if (s !== null) {
+      setStatus(s);
+    }
+  }, [searchParams]);
 
   // Search & Filter State
   const [q, setQ] = useState(searchParams.get('q') || '');
@@ -160,15 +179,25 @@ export const CasesPage = () => {
             <Download className="w-3.5 h-3.5 text-[#71717A]" />
             <span>Export Table CSV</span>
           </button>
+
+          <button
+            onClick={() => {
+              setSearchParams({ tab: 'student-intake' });
+            }}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-black bg-[#00E676] hover:bg-[#00c864] rounded-lg shadow-md shadow-[#00E676]/10 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Case</span>
+          </button>
         </div>
       </div>
 
       {/* Preset Status Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-[#232427] pb-3">
         <button
-          onClick={() => { setStatus(''); setPage(1); }}
+          onClick={() => { setSearchParams({}); setStatus(''); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            status === ''
+            !isStudentIntake && status === ''
               ? 'bg-[#1F2023] text-[#F4F4F5] font-semibold border border-[#2D2E32]'
               : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
           }`}
@@ -176,9 +205,9 @@ export const CasesPage = () => {
           All Cases
         </button>
         <button
-          onClick={() => { setStatus('pending'); setPage(1); }}
+          onClick={() => { setSearchParams({ status: 'pending' }); setStatus('pending'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            status === 'pending'
+            !isStudentIntake && status === 'pending'
               ? 'bg-[#8A99B5]/20 text-[#8A99B5] font-semibold border border-[#8A99B5]/40'
               : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
           }`}
@@ -186,9 +215,9 @@ export const CasesPage = () => {
           Pending Triage
         </button>
         <button
-          onClick={() => { setStatus('under_process'); setPage(1); }}
+          onClick={() => { setSearchParams({ status: 'under_process' }); setStatus('under_process'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            status === 'under_process'
+            !isStudentIntake && status === 'under_process'
               ? 'bg-[#6C7BFF]/20 text-[#6C7BFF] font-semibold border border-[#6C7BFF]/40'
               : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
           }`}
@@ -196,9 +225,9 @@ export const CasesPage = () => {
           Under Process
         </button>
         <button
-          onClick={() => { setStatus('escalated'); setPage(1); }}
+          onClick={() => { setSearchParams({ status: 'escalated' }); setStatus('escalated'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            status === 'escalated'
+            !isStudentIntake && status === 'escalated'
               ? 'bg-[#FF4D79]/20 text-[#FF4D79] font-semibold border border-[#FF4D79]/40'
               : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
           }`}
@@ -206,16 +235,52 @@ export const CasesPage = () => {
           Escalated
         </button>
         <button
-          onClick={() => { setStatus('disposed'); setPage(1); }}
+          onClick={() => { setSearchParams({ status: 'disposed' }); setStatus('disposed'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            status === 'disposed'
+            !isStudentIntake && status === 'disposed'
               ? 'bg-[#19D3A2]/20 text-[#19D3A2] font-semibold border border-[#19D3A2]/40'
               : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
           }`}
         >
           Disposed
         </button>
+
+        {/* Student Intake Tab */}
+        <button
+          onClick={() => {
+            setSearchParams({ tab: 'student-intake' });
+          }}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            isStudentIntake
+              ? 'bg-[#00E676]/20 text-[#00E676] font-semibold border border-[#00E676]/40'
+              : 'bg-[#151618] text-[#71717A] hover:bg-[#1A1B1E] hover:text-[#A1A1AA] border border-[#232427]'
+          }`}
+        >
+          <span>Student Intake</span>
+          {unreviewedCount > 0 && (
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                isStudentIntake
+                  ? 'bg-[#00E676] text-black'
+                  : 'bg-[#00E676]/20 text-[#00E676] border border-[#00E676]/40'
+              }`}
+            >
+              {unreviewedCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {isStudentIntake ? (
+        <StudentIntakeTab
+          onViewAllCases={() => {
+            setSearchParams({});
+            setStatus('');
+            setPage(1);
+          }}
+        />
+      ) : (
+        <>
 
       {/* Filter Control Bar */}
       <div className="bg-[#151618] rounded-card border border-[#232427] p-4 space-y-3">
@@ -495,6 +560,8 @@ export const CasesPage = () => {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };

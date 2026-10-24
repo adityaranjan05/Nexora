@@ -2,7 +2,7 @@
  * Connector for Public Grievance Redressal Cell (PGRC) complaints system.
  * PGRC uses fields like: grievance_id, institute_name, place, grievance_type, narrative, submission_date, progress_state
  */
-export const fetchPgrcCases = async (baseUrl = 'http://localhost:5000') => {
+export const fetchPgrcCases = async (baseUrl = `http://localhost:${process.env.PORT || 3000}`) => {
   try {
     const res = await fetch(`${baseUrl}/mock/pgrc/cases`);
     if (!res.ok) throw new Error(`PGRC API responded with status ${res.status}`);

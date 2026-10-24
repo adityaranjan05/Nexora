@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const apiClient = axios.create({
   baseURL,
@@ -104,6 +104,10 @@ export const casesApi = {
   linkCases: async (data) => {
     // data: { caseAId, caseBId, linkType, remarks }
     const response = await apiClient.post('/cases/link', data);
+    return response.data;
+  },
+  createCase: async (data) => {
+    const response = await apiClient.post('/cases', data);
     return response.data;
   },
 };

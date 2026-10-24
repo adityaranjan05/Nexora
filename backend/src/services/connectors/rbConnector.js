@@ -2,7 +2,7 @@
  * Connector for Regulatory Bureau (RB) complaints system.
  * RB uses fields like: complaint_no, institute_title, campus_city, registration_dt, matter_summary, regulatory_category
  */
-export const fetchRbCases = async (baseUrl = 'http://localhost:5000') => {
+export const fetchRbCases = async (baseUrl = `http://localhost:${process.env.PORT || 3000}`) => {
   try {
     const res = await fetch(`${baseUrl}/mock/rb/cases`);
     if (!res.ok) throw new Error(`RB API responded with status ${res.status}`);
