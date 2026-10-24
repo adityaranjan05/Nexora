@@ -43,14 +43,29 @@ export const CommandPalette = () => {
       ).slice(0, 4)
     : instList.slice(0, 2);
 
-  const filteredOverlaps = q
-    ? overlapList.filter(
-        (o) =>
-          (o.id || o._id || '').toLowerCase().includes(q) ||
-          (o.institutionName || o.institution?.name || '').toLowerCase().includes(q) ||
-          (o.triggerReason || '').toLowerCase().includes(q)
-      ).slice(0, 3)
-    : overlapList.slice(0, 2);
+  
+const filteredOverlaps = q
+  ? overlapList.filter((o) => {
+      const id = String(o.id || '').toLowerCase();
+      const mongoId = String(o._id || '').toLowerCase();
+      const displayId = `OVL-${String(o._id || o.id || '')
+        .slice(-6)
+        .toUpperCase()}`.toLowerCase();
+      const institution = String(
+        o.institutionName || o.institution?.name || ''
+      ).toLowerCase();
+      const reason = String(o.triggerReason || '').toLowerCase();
+
+      return (
+        id.includes(q) ||
+        mongoId.includes(q) ||
+        displayId.includes(q) ||
+        institution.includes(q) ||
+        reason.includes(q)
+      );
+    }).slice(0, 3)
+  : overlapList.slice(0, 2);
+
 
   const handleSelectCase = (caseObj) => {
     setCommandPaletteOpen(false);
