@@ -72,12 +72,14 @@ export function App() {
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* ── Root → Landing ─────────────────────────────────── */}
+                {/* ── Direct Multi-Portal Login ─────────────────────────── */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<LandingLoginPage />} />
+                <Route path="/officer/login" element={<LandingLoginPage defaultPortal="officer" />} />
+                <Route path="/bureau/login" element={<LandingLoginPage defaultPortal="bureau" />} />
+                <Route path="/student/login" element={<LandingLoginPage defaultPortal="student" />} />
 
                 {/* ── Officer Portal ──────────────────────────────────── */}
-                <Route path="/officer/login" element={<OfficerLoginPage />} />
                 <Route
                   path="/officer"
                   element={
@@ -101,7 +103,6 @@ export function App() {
                 </Route>
 
                 {/* ── Bureau Portal ───────────────────────────────────── */}
-                <Route path="/bureau/login" element={<BureauLoginPage />} />
                 <Route
                   path="/bureau"
                   element={
@@ -121,7 +122,6 @@ export function App() {
                 </Route>
 
                 {/* ── Student Portal ──────────────────────────────────── */}
-                <Route path="/student/login" element={<StudentLoginPage />} />
                 <Route
                   path="/student"
                   element={

@@ -186,7 +186,7 @@ export function BureauCasesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-[#1F2023] bg-[#151618]/50 text-[11px] font-semibold text-[#71717A] uppercase tracking-wider">
                   <th className="py-3 px-4">Case Ref</th>

@@ -157,21 +157,20 @@ export function BureauLayout() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => navigate('/login')}
-              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#151618] border border-[#232427] text-[11px] text-[#A1A1AA] hover:text-white transition"
-              title="Switch Portal Hub"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#151618] border border-[#232427] text-[11px] text-[#A1A1AA] hover:text-white transition cursor-pointer"
+              title="Switch Portal"
             >
-              <span>Portal Hub</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>Switch Portal</span>
             </button>
             <div className="h-4 w-px bg-[#232427] hidden sm:block" />
-            <div className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#6C7BFF]/10 text-[#6C7BFF] border border-[#6C7BFF]/25">
-              Assigned Cell Scope
+            <div className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#6C7BFF]/10 text-[#6C7BFF] border border-[#6C7BFF]/25 font-semibold">
+              {user?.bureau?.code || 'BUREAU'} Scope
             </div>
           </div>
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 min-w-0 h-full overflow-hidden bg-[#0F1011] border border-[#232427] rounded-2xl relative">
+        <main className="flex-1 min-w-0 h-full overflow-y-auto bg-[#0F1011] border border-[#232427] rounded-2xl relative p-4 sm:p-6 custom-scrollbar">
           <Outlet />
         </main>
       </div>

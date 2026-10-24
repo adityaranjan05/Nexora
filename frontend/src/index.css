@@ -29,7 +29,13 @@
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      overflow: hidden;
+    }
   }
 
   .font-mono {
@@ -38,10 +44,10 @@
   }
 }
 
-/* Custom scrollbars matching takeUforward dark UI */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -54,7 +60,12 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #323438;
+  background: #383A40;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #232427 transparent;
 }
 
 /* Hairline section divider header */
