@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -68,8 +69,8 @@ export const InstitutionsPage = () => {
   const controlClass = "px-3 py-2 bg-[#0B1730] border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500";
 
   return (
-    <div className="space-y-6 text-slate-200">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: "easeOut" }}>
+      <motion.div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             AICTE Approved Institutions Directory
@@ -78,16 +79,18 @@ export const InstitutionsPage = () => {
             Monitor institutional compliance history, cross-bureau dockets, and risk indicators.
           </p>
         </div>
-        <button
+        <motion.button
           onClick={() => refetch()}
+          whileHover={{ y: -1, scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#111F3A] border border-slate-700 rounded-lg hover:bg-[#172844] hover:border-slate-600 transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-4 shadow-subtle flex flex-col sm:flex-row items-center gap-3">
+      <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-4 shadow-subtle flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -106,40 +109,46 @@ export const InstitutionsPage = () => {
             {types.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-      </div>
+      </motion.div>
 
+      <AnimatePresence mode="wait">
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700">
+        <motion.div key="loading" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700">
           <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-3" />
           <p className="text-sm font-medium text-slate-300">Loading institutions directory...</p>
-        </div>
+        </motion.div>
       )}
 
       {isError && (
-        <div className="bg-rose-500/5 border border-rose-500/30 rounded-xl p-6 text-center">
+        <motion.div key="error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="bg-rose-500/5 border border-rose-500/30 rounded-xl p-6 text-center">
           <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-rose-300">Failed to load institutions</h3>
           <p className="text-xs text-slate-400 mt-1">{error?.message || 'Server error'}</p>
           <button onClick={() => refetch()} className="mt-3 text-xs font-semibold text-blue-300 hover:text-blue-200 hover:underline">
             Retry
           </button>
-        </div>
+        </motion.div>
       )}
 
       {!isLoading && !isError && institutions.length === 0 && (
-        <div className="py-16 bg-[#101D35] rounded-xl border border-slate-700 text-center">
+        <motion.div key="empty" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="py-16 bg-[#101D35] rounded-xl border border-slate-700 text-center">
           <Building2 className="w-10 h-10 text-slate-600 mx-auto mb-3" />
           <p className="text-sm font-semibold text-slate-200">No institutions found</p>
           <p className="text-xs text-slate-400 mt-1">Try adjusting your search or filters.</p>
-        </div>
+        </motion.div>
       )}
 
       {!isLoading && !isError && institutions.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {institutions.map((inst) => (
-            <div
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {institutions.map((inst, index) => (
+            <motion.div
               key={inst._id}
               onClick={() => navigate(`/institutions/${inst._id}`)}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, delay: Math.min(index * 0.045, 0.36) }}
+              whileHover={{ y: -4, scale: 1.01, transition: { duration: 0.18 } }}
+              whileTap={{ scale: 0.99 }}
               className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle hover:border-blue-500/70 hover:shadow-elevated transition-all cursor-pointer flex flex-col justify-between group"
             >
               <div>
@@ -173,10 +182,11 @@ export const InstitutionsPage = () => {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+      </AnimatePresence>
+    </motion.div>
   );
 };

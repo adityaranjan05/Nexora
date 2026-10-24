@@ -13,6 +13,7 @@ import {
 import { adminApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { motion } from 'motion/react';
 
 export const AdministrationPage = () => {
   const { user: currentUser } = useAuth();
@@ -122,9 +123,9 @@ export const AdministrationPage = () => {
   const usersList = usersData?.data || [];
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <motion.div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             System Administration & Policy Rules
@@ -141,10 +142,10 @@ export const AdministrationPage = () => {
           <Save className="w-3.5 h-3.5" />
           <span>Save Policy Configuration</span>
         </button>
-      </div>
+      </motion.div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-700/80 pb-3 text-xs">
+      <motion.div className="flex flex-wrap items-center gap-2 border-b border-slate-700/80 pb-3 text-xs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <button
           onClick={() => setActiveTab('sla')}
           className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
@@ -175,11 +176,11 @@ export const AdministrationPage = () => {
         >
           Authorized Users & Roles
         </button>
-      </div>
+      </motion.div>
 
       {/* TAB 1: SLA Statutory Rules */}
       {activeTab === 'sla' && (
-        <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden p-5 space-y-4">
+        <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden p-5 space-y-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-100">Mandatory Category Resolution Deadlines</h3>
@@ -221,7 +222,7 @@ export const AdministrationPage = () => {
                   {rulesList.map((item) => {
                     const currentVal = slaEdits[item.category]?.daysToDispose ?? item.daysToDispose;
                     return (
-                      <tr key={item._id || item.category} className="hover:bg-[#0B1730]">
+                      <motion.tr key={item._id || item.category} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="hover:bg-[#0B1730]">
                         <td className="py-2.5 px-3 font-semibold text-slate-200">{item.category}</td>
                         <td className="py-2.5 px-3 text-slate-400">
                           {item.bureau?.name || item.bureau?.code || 'Lead Bureau'}
@@ -232,7 +233,7 @@ export const AdministrationPage = () => {
                               type="number"
                               value={currentVal}
                               onChange={(e) => handleSlaDaysChange(item.category, e.target.value)}
-                              className="w-20 px-2 py-1 border border-slate-700 rounded-lg bg-[#0B1730] px-2 py-1 font-mono text-xs font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                              className="w-20 px-2 py-1 border border-slate-700 rounded-lg bg-[#0B1730] font-mono text-xs font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                             />
                             <span className="text-slate-400">Calendar Days</span>
                           </div>
@@ -246,26 +247,26 @@ export const AdministrationPage = () => {
                             Update
                           </button>
                         </td>
-                      </tr>
+                      </motion.tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 2: Matching & Overlap Engine */}
       {activeTab === 'matching' && (
-        <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle p-5 space-y-6 text-xs">
+        <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle p-5 space-y-6 text-xs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div>
             <h3 className="text-sm font-bold text-slate-100">Fuzzy Institution Matching Threshold</h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Determines confidence cutoff for automated resolution vs routing into Human Match Review queue.
             </p>
 
-            <div className="mt-4 p-4 bg-[#0B1730] rounded-lg border border-slate-700/80 max-w-xl space-y-3">
+            <motion.div className="mt-4 p-4 bg-[#0B1730] rounded-lg border border-slate-700/80 max-w-xl space-y-3" whileHover={{ y: -2, transition: { duration: 0.15 } }}>
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-slate-200">Auto-Match Confidence Threshold:</span>
                 <span className="font-mono text-base font-bold text-blue-300">{matchingThreshold}%</span>
@@ -281,7 +282,7 @@ export const AdministrationPage = () => {
               <p className="text-[11px] text-slate-400">
                 Matches with confidence &lt; {matchingThreshold}% require human officer confirmation before case registration.
               </p>
-            </div>
+            </motion.div>
           </div>
 
           <div className="pt-4 border-t border-slate-700/70">
@@ -290,7 +291,7 @@ export const AdministrationPage = () => {
               Timeframe within which concurrent cases against the same Permanent ID trigger an Overlap Alert.
             </p>
 
-            <div className="mt-4 p-4 bg-[#0B1730] rounded-lg border border-slate-700/80 max-w-xl space-y-2">
+            <motion.div className="mt-4 p-4 bg-[#0B1730] rounded-lg border border-slate-700/80 max-w-xl space-y-2" whileHover={{ y: -2, transition: { duration: 0.15 } }}>
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-slate-200">Lookback Window:</span>
                 <span className="font-mono text-base font-bold text-purple-300">{autoFlagOverlapDays} Days</span>
@@ -304,14 +305,14 @@ export const AdministrationPage = () => {
                 onChange={(e) => setAutoFlagOverlapDays(Number(e.target.value))}
                 className="w-full accent-purple-600 cursor-pointer"
               />
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 3: Users & Roles */}
       {activeTab === 'users' && (
-        <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden p-5 space-y-4">
+        <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden p-5 space-y-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-100">AICTE Nodal Officers & Access Hierarchy</h3>
@@ -350,7 +351,7 @@ export const AdministrationPage = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-700/70">
                   {usersList.map((user) => (
-                    <tr key={user._id || user.id} className="hover:bg-[#0B1730]">
+                    <motion.tr key={user._id || user.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="hover:bg-[#0B1730]">
                       <td className="py-2.5 px-3 font-semibold text-slate-100">{user.name}</td>
                       <td className="py-2.5 px-3">
                         <span className="px-2 py-0.5 bg-slate-700/60 rounded text-slate-300 font-medium">
@@ -366,15 +367,15 @@ export const AdministrationPage = () => {
                           Active
                         </span>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

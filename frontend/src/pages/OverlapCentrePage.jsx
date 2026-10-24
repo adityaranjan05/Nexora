@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -110,9 +111,9 @@ export const OverlapCentrePage = () => {
   };
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }}>
       {/* Statutory Authority Disclaimer Banner */}
-      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-[#142B45] text-white rounded-xl p-5 shadow-elevated border border-purple-800/40">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="bg-gradient-to-r from-purple-900 via-indigo-900 to-[#142B45] text-white rounded-xl p-5 shadow-elevated border border-purple-800/40">
         <div className="flex items-start space-x-3.5">
           <div className="p-2.5 bg-white/10 rounded-lg shrink-0 mt-0.5 border border-white/20">
             <GitMerge className="w-6 h-6 text-purple-300" />
@@ -133,30 +134,30 @@ export const OverlapCentrePage = () => {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Loading / Error States */}
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700/80">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700/80">
           <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-3" />
           <p className="text-sm font-medium text-slate-400">Loading overlap review queue...</p>
-        </div>
+        </motion.div>
       )}
 
       {isError && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-6 text-center">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-6 text-center">
           <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-rose-300">Failed to load overlaps</h3>
           <p className="text-xs text-slate-400 mt-1">{error?.message || 'Server error'}</p>
           <button onClick={() => refetch()} className="mt-3 text-xs font-semibold text-blue-300 hover:underline">Retry</button>
-        </div>
+        </motion.div>
       )}
 
       {/* Main Two-Column Workflow Container */}
       {!isLoading && !isError && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Overlap Review Queue */}
-          <div className="lg:col-span-4 bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle p-4 space-y-3">
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="lg:col-span-4 bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle p-4 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-700/60">
               <div>
                 <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">
@@ -190,9 +191,14 @@ export const OverlapCentrePage = () => {
                   const isSelected = ov._id === effectiveSelectedId;
                   const inst = ov.institution;
                   return (
-                    <div
+                    <motion.div
                       key={ov._id}
                       onClick={() => setSelectedOverlapId(ov._id)}
+                      initial={{ opacity: 0, y: 7 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.99 }}
+                      transition={{ duration: 0.22 }}
                       className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
                         isSelected
                           ? 'border-purple-600 bg-purple-500/100/10 shadow-subtle ring-1 ring-purple-500'
@@ -229,18 +235,18 @@ export const OverlapCentrePage = () => {
                           {ov.status}
                         </span>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Column: Deep Side-by-Side Comparison & Action Pane */}
           {selectedGroup ? (
-            <div className="lg:col-span-8 space-y-6">
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="lg:col-span-8 space-y-6">
               {/* Active Group Header & Actions */}
-              <div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle space-y-4">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }} className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
                   <div>
                     <div className="flex items-center space-x-2">
@@ -347,7 +353,7 @@ export const OverlapCentrePage = () => {
                     </button>
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* Side-by-Side Comparison */}
               <div>
@@ -361,8 +367,12 @@ export const OverlapCentrePage = () => {
 
                 <div className={`grid grid-cols-1 ${groupCases.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
                   {groupCases.map((c, idx) => (
-                    <div
+                    <motion.div
                       key={c._id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: idx * 0.06 }}
+                      whileHover={{ y: -2 }}
                       className="bg-[#101D35] rounded-xl border border-slate-700/80 p-4 shadow-subtle flex flex-col justify-between space-y-3"
                     >
                       <div>
@@ -429,17 +439,17 @@ export const OverlapCentrePage = () => {
                           <ExternalLink className="w-3 h-3" />
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ) : (
-            <div className="lg:col-span-8 p-12 bg-[#101D35] rounded-xl border border-slate-700/80 text-center text-slate-400 text-xs">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-8 p-12 bg-[#101D35] rounded-xl border border-slate-700/80 text-center text-slate-400 text-xs">
               Select an overlap group from the queue to inspect side-by-side case facts.
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* MODAL 1: Mark Coordinated */}
@@ -570,6 +580,6 @@ export const OverlapCentrePage = () => {
           </div>
         </Modal>
       )}
-    </div>
+    </motion.div>
   );
 };

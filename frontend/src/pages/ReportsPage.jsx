@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart3, 
@@ -113,9 +114,9 @@ export const ReportsPage = () => {
   const totalOverallCases = bureauRows.reduce((acc, curr) => acc + curr.total, 0);
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <motion.div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             Statutory Compliance & Performance Analytics
@@ -143,10 +144,10 @@ export const ReportsPage = () => {
             <span>Export Analytics CSV</span>
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter Controls Bar */}
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-700/80 bg-[#101D35] p-4 text-xs shadow-subtle no-print">
+      <motion.div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-700/80 bg-[#101D35] p-4 text-xs shadow-subtle no-print" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.06 }}>
         <div>
           <label className="block text-[10px] font-semibold text-slate-400 mb-1">Time Horizon</label>
           <select
@@ -197,7 +198,7 @@ export const ReportsPage = () => {
             <span className="font-mono font-bold text-blue-300 text-sm">{disposalData.data.overallRate}</span>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Printable Report Header for Official Submissions */}
       <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6 text-slate-900">
@@ -209,7 +210,7 @@ export const ReportsPage = () => {
       </div>
 
       {/* Ageing Buckets Analysis Card */}
-      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle space-y-4">
+      <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-5 shadow-subtle space-y-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/70 pb-3">
           <div>
             <h3 className="text-sm font-bold text-slate-100">Case Ageing Analysis & SLA Buckets</h3>
@@ -226,14 +227,14 @@ export const ReportsPage = () => {
             Loading ageing distribution...
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.07 } } }}>
             {ageingSummary.map((bucket) => {
               const count = bucket.count || 0;
               const pct = totalAgeingCases > 0 ? Math.round((count / totalAgeingCases) * 100) : 0;
               const color = ageingColors[bucket.name] || 'bg-slate-400';
 
               return (
-                <div key={bucket.name} className="p-4 rounded-lg bg-[#0B1730] border border-slate-700/80">
+                <motion.div key={bucket.name} variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }} className="p-4 rounded-lg bg-[#0B1730] border border-slate-700/80" whileHover={{ y: -2, transition: { duration: 0.15 } }}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-400 capitalize">{bucket.name}</span>
                     <span className="font-mono text-xs font-bold text-slate-100">{pct}%</span>
@@ -243,15 +244,15 @@ export const ReportsPage = () => {
                     <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                   </div>
                   <span className="text-[11px] text-slate-400 mt-1 block">Active Inquiries</span>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Bureau-wise Detailed Performance Table */}
-      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden">
+      <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.12 }}>
         <div className="flex items-center justify-between gap-3 border-b border-slate-700/80 bg-[#0B1730] p-4">
           <div>
             <h3 className="text-sm font-bold text-slate-100">Bureau & Cell Performance Index</h3>
@@ -293,7 +294,7 @@ export const ReportsPage = () => {
               <tbody className="divide-y divide-slate-700/70 font-mono">
                 {bureauRows.length > 0 ? (
                   bureauRows.map((b) => (
-                    <tr key={b.code} className="hover:bg-[#0B1730] transition-colors">
+                    <motion.tr key={b.code} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="hover:bg-[#0B1730] transition-colors">
                       <td className="py-3 px-4 font-sans font-semibold text-slate-100">
                         {b.bureau} ({b.code})
                       </td>
@@ -311,7 +312,7 @@ export const ReportsPage = () => {
                       <td className="py-3 px-4 text-right">
                         <span className="font-bold text-blue-300">{b.disposalRate}%</span>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))
                 ) : (
                   <tr>
@@ -324,8 +325,8 @@ export const ReportsPage = () => {
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

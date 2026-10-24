@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -105,9 +106,9 @@ export const AlertsPage = () => {
   };
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-white font-sans">
             Operational Alerts Centre
@@ -134,10 +135,10 @@ export const AlertsPage = () => {
             <span>Mark All as Read</span>
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabs & Filter Bar */}
-      <div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-3 shadow-subtle flex flex-wrap items-center justify-between gap-3 text-xs">
+      <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 p-3 shadow-subtle flex flex-wrap items-center justify-between gap-3 text-xs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.06 }}>
         <div className="flex flex-wrap items-center gap-1.5">
           {['All', 'Unread', 'Overlaps', 'SLA', 'Escalations'].map((tab) => (
             <button
@@ -172,29 +173,33 @@ export const AlertsPage = () => {
             <option value="info">Info</option>
           </select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Alerts List */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700/80">
+        <motion.div className="flex flex-col items-center justify-center py-16 bg-[#101D35] rounded-xl border border-slate-700/80" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
           <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-3" />
           <p className="text-sm font-medium text-slate-400">Loading alerts...</p>
-        </div>
+        </motion.div>
       ) : isError ? (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-6 text-center">
+        <motion.div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-6 text-center" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
           <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-rose-300">Failed to load alerts</h3>
           <p className="text-xs text-slate-400 mt-1">{error?.message || 'Server error'}</p>
           <button onClick={() => refetch()} className="mt-3 text-xs font-semibold text-blue-300 hover:underline">
             Retry
           </button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle divide-y divide-slate-700/70 overflow-hidden">
+        <motion.div className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle divide-y divide-slate-700/70 overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           {filteredAlerts.length > 0 ? (
             filteredAlerts.map((alert) => (
-              <div
+              <motion.div
                 key={alert._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: Math.min(filteredAlerts.indexOf(alert) * 0.035, 0.25) }}
+                whileHover={{ backgroundColor: "#0B1730" }}
                 onClick={() => {
                   markReadMutation.mutate(alert._id);
                   if (alert.type === 'overlap') {
@@ -259,15 +264,15 @@ export const AlertsPage = () => {
                     <ExternalLink className="w-3.5 h-3.5" />
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))
           ) : (
-            <div className="p-12 text-center text-slate-400 text-xs">
+            <motion.div className="p-12 text-center text-slate-400 text-xs" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
               No operational alerts matching active filter criteria.
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };

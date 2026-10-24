@@ -70,7 +70,7 @@ export const KpiCard = ({
       onClick={onClick}
       className={`
         relative rounded-xl border border-[#294158]
-        border-l-4 ${v.accent}
+        
         bg-gradient-to-br from-[#14283B] via-[#101D30] to-[#0D1728]
         p-4 shadow-lg shadow-black/10
         transition-all duration-200

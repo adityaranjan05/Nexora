@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -202,7 +203,12 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       {/* Welcome & Monitoring Header */}
       <div className="bg-gradient-to-br from-[#17384B] via-[#12263A] to-[#0D182A] rounded-xl border border-[#31566A] p-5 sm:p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -302,7 +308,13 @@ export const DashboardPage = () => {
       </div>
 
       {/* Main Analytics Grid (Stacked Bars & Donut) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.08 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+      >
         {/* Bureau Workload Stacked Bar Chart */}
         <div className="lg:col-span-8 bg-gradient-to-br from-[#14283B] via-[#101D30] to-[#0D1728]
 p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
@@ -335,14 +347,14 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
+                      backgroundColor: '#101D35',
+                      border: '1px solid #294158',
                       borderRadius: '8px',
                       color: '#FFFFFF',
                       fontSize: '12px',
                     }}
                     formatter={(value, name) => [value, name === 'process' ? 'Under Process' : name]}
-                  />
+                   wrapperStyle={{ outline: 'none', zIndex: 20 }}  cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }} />
                   <Legend 
                     verticalAlign="top" 
                     height={36} 
@@ -397,13 +409,13 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: '#1E293B',
-                    borderColor: '#334155',
+                    backgroundColor: '#101D35',
+                    border: '1px solid #294158',
                     borderRadius: '8px',
                     color: '#FFFFFF',
                     fontSize: '12px',
                   }}
-                />
+                 wrapperStyle={{ outline: 'none', zIndex: 20 }}  cursor={false} />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}
@@ -423,10 +435,16 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Secondary Analytics Row: Regional Distribution & Ageing Bucket */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.08 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+      >
         {/* Regional Distribution */}
         <div className="lg:col-span-6 bg-gradient-to-br from-[#14283B] via-[#101D30] to-[#0D1728] p-5 rounded-xl border border-[#263E54] shadow-subtle">
           <div className="flex items-center justify-between pb-3 border-b border-[#26394F]">
@@ -452,13 +470,13 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
                   <YAxis dataKey="region" type="category" tick={{ fontSize: 11, fill: '#A9BDD0' }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
+                      backgroundColor: '#101D35',
+                      border: '1px solid #294158',
                       borderRadius: '8px',
                       color: '#FFFFFF',
                       fontSize: '12px',
                     }}
-                  />
+                   wrapperStyle={{ outline: 'none', zIndex: 20 }}  cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }} />
                   <Bar dataKey="cases" name="Complaint Cases" fill="#60A5FA" barSize={14} radius={[0, 4, 4, 0]} />
                   <Bar dataKey="pending" name="Open Cases" fill="#A78BFA" barSize={14} radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -496,13 +514,13 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
                   <YAxis tick={{ fontSize: 11, fill: '#A9BDD0' }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1E293B',
-                      borderColor: '#334155',
+                      backgroundColor: '#101D35',
+                      border: '1px solid #294158',
                       borderRadius: '8px',
                       color: '#FFFFFF',
                       fontSize: '12px',
                     }}
-                  />
+                   wrapperStyle={{ outline: 'none', zIndex: 20 }}  cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }} />
                   <Bar dataKey="count" name="Open Complaints" fill="#60A5FA" barSize={20} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -513,10 +531,16 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Priority & Coordination Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.08 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+      >
         {/* Prominent Potential Overlapping Cases Panel */}
         <div className="lg:col-span-7 bg-gradient-to-br from-[#252744] via-[#1A2038] to-[#11182B] rounded-xl border border-[#414365] shadow-subtle p-5 flex flex-col justify-between">
           <div>
@@ -692,8 +716,8 @@ p-5 rounded-xl border border-[#263E54] shadow-subtle flex flex-col">
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -140,7 +140,7 @@ export const TopNavbar = ({ setMobileOpen }) => {
               className="bg-transparent border-none text-xs font-medium text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/60 cursor-pointer"
             >
               {bureauOptions.map((b) => (
-                <option key={b} value={b}>{b}</option>
+                <option key={b} value={b} className='bg-[#101D35]'>{b}</option>
               ))}
             </select>
           </div>
@@ -154,7 +154,7 @@ export const TopNavbar = ({ setMobileOpen }) => {
               className="bg-transparent border-none text-xs font-medium text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/60 cursor-pointer"
             >
               {dateRangeOptions.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d} className='bg-[#101D35]'>{d}</option>
               ))}
             </select>
           </div>

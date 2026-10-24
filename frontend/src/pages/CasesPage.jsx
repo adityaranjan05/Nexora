@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -139,9 +140,19 @@ export const CasesPage = () => {
   const pagination = casesQuery.data?.pagination || { total: 0, page: 1, limit: 15, pages: 1 };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       {/* Page Title & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             Complaint Cases Management
@@ -152,19 +163,19 @@ export const CasesPage = () => {
         </div>
 
         <div className="flex items-center space-x-2.5">
-          <button
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
             onClick={handleExportCSV}
             className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#111F3A] border border-slate-600/80 rounded-lg hover:bg-[#1B2D48] shadow-subtle transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-slate-300" />
             <span>Export Table CSV</span>
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Preset Status Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-700/80 pb-3">
-        <button
+        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
           onClick={() => { setStatus(''); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             status === ''
@@ -173,8 +184,8 @@ export const CasesPage = () => {
           }`}
         >
           All Cases
-        </button>
-        <button
+        </motion.button>
+        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
           onClick={() => { setStatus('pending'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             status === 'pending'
@@ -183,8 +194,8 @@ export const CasesPage = () => {
           }`}
         >
           Pending Triage
-        </button>
-        <button
+        </motion.button>
+        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
           onClick={() => { setStatus('under_process'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             status === 'under_process'
@@ -193,8 +204,8 @@ export const CasesPage = () => {
           }`}
         >
           Under Process
-        </button>
-        <button
+        </motion.button>
+        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
           onClick={() => { setStatus('escalated'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             status === 'escalated'
@@ -203,8 +214,8 @@ export const CasesPage = () => {
           }`}
         >
           Escalated
-        </button>
-        <button
+        </motion.button>
+        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
           onClick={() => { setStatus('disposed'); setPage(1); }}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             status === 'disposed'
@@ -213,11 +224,17 @@ export const CasesPage = () => {
           }`}
         >
           Disposed
-        </button>
+        </motion.button>
       </div>
 
       {/* Filter Control Bar */}
-      <div className="bg-gradient-to-br from-[#111F3A] via-[#101D35] to-[#0B1730] rounded-xl border border-slate-700/80 p-4 shadow-subtle space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.08 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="bg-gradient-to-br from-[#111F3A] via-[#101D35] to-[#0B1730] rounded-xl border border-slate-700/80 p-4 shadow-subtle space-y-3"
+      >
         {/* Search Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div className="relative">
@@ -340,19 +357,25 @@ export const CasesPage = () => {
         {/* Clear Filters Button */}
         {(q || caseId || aicteId || bureau || region || category || status || dateFrom || dateTo) && (
           <div className="flex justify-end pt-1">
-            <button
+            <motion.button whileHover={{ x: -2 }} whileTap={{ scale: 0.98 }}
               onClick={handleResetFilters}
               className="text-xs text-rose-300 hover:text-rose-200 font-semibold inline-flex items-center gap-1 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset All Filters</span>
-            </button>
+            </motion.button>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Main Table / State Container */}
-      <div className="bg-gradient-to-b from-[#101D35] to-[#0B1730] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="bg-gradient-to-b from-[#101D35] to-[#0B1730] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden"
+      >
         {casesQuery.isLoading ? (
           <div className="flex flex-col items-center justify-center p-12 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-2" />
@@ -402,7 +425,10 @@ export const CasesPage = () => {
                   const slaStatus = c.isOverdue ? 'Beyond Timeline' : c.isDueSoon ? 'Due Soon' : 'Within Timeline';
 
                   return (
-                    <tr
+                    <motion.tr
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
                       key={c._id}
                       onClick={() => navigate(`/cases/${c._id}`)}
                       className="hover:bg-[#182844] transition-colors cursor-pointer group"
@@ -451,7 +477,7 @@ export const CasesPage = () => {
                           <Eye className="w-4 h-4" />
                         </button>
                       </td>
-                    </tr>
+                    </motion.tr>
                   );
                 })}
               </tbody>
@@ -492,8 +518,8 @@ export const CasesPage = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

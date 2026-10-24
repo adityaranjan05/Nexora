@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   CheckCircle2, 
@@ -62,9 +63,9 @@ export const MatchReviewPage = () => {
   const pendingCount = items.filter((m) => m.matchStatus === 'review').length;
 
   return (
-    <div className="space-y-6 text-slate-200">
+    <motion.div className="space-y-6 text-slate-200" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
             Institution Identity Match Review
@@ -86,10 +87,10 @@ export const MatchReviewPage = () => {
             {pendingCount} Pending Human Review
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Human-in-the-Loop Protocol Notice */}
-      <div className="bg-[#111F3A] border border-slate-700/80 text-slate-100 p-4 rounded-xl shadow-subtle flex items-start space-x-3 text-xs">
+      <motion.div className="bg-[#111F3A] border border-slate-700/80 text-slate-100 p-4 rounded-xl shadow-subtle flex items-start space-x-3 text-xs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.08 }}>
         <Sparkles className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
         <div>
           <span className="font-bold text-white uppercase tracking-wide">
@@ -100,10 +101,10 @@ export const MatchReviewPage = () => {
             before binding regulatory orders are issued. Confirming a match permanently links the complaint docket to the AICTE Master Registry.
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-700/80 pb-3 text-xs">
+      <motion.div className="flex flex-wrap items-center gap-2 border-b border-slate-700/80 pb-3 text-xs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {['Pending', 'Confirmed', 'Manual', 'All'].map((tab) => (
           <button
             key={tab}
@@ -117,19 +118,19 @@ export const MatchReviewPage = () => {
             {tab === 'Pending' ? 'Pending Review' : tab === 'Confirmed' ? 'Human Confirmed' : tab === 'Manual' ? 'Flagged Manual' : 'All Reviews'}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="p-16 flex flex-col items-center justify-center space-y-3 bg-[#101D35] rounded-xl border border-slate-700/80">
+        <motion.div className="p-16 flex flex-col items-center justify-center space-y-3 bg-[#101D35] rounded-xl border border-slate-700/80" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
           <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
           <p className="text-xs text-slate-500 font-medium">Loading match review queue...</p>
-        </div>
+        </motion.div>
       )}
 
       {/* Error State */}
       {isError && (
-        <div className="p-6 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between text-rose-200 text-xs">
+        <motion.div className="p-6 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between text-rose-200 text-xs" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
           <div className="flex flex-wrap items-center gap-2">
             <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
             <span>Failed to load match review queue: {error?.message || 'Server error'}</span>
@@ -140,12 +141,12 @@ export const MatchReviewPage = () => {
           >
             Retry
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Match Review Items */}
       {!isLoading && !isError && (
-        <div className="space-y-5">
+        <motion.div className="space-y-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           {filteredReviews.length > 0 ? (
             filteredReviews.map((item) => {
               const c = item.case || {};
@@ -156,8 +157,12 @@ export const MatchReviewPage = () => {
               const isManual = item.matchStatus === 'unmatched';
 
               return (
-                <div
+                <motion.div
                   key={c._id || item._id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(filteredReviews.indexOf(item) * 0.05, 0.25) }}
+                  whileHover={{ y: -2, transition: { duration: 0.18 } }}
                   className="bg-[#101D35] rounded-xl border border-slate-700/80 shadow-subtle overflow-hidden"
                 >
                   {/* Card Header: Raw Intake Data */}
@@ -212,8 +217,12 @@ export const MatchReviewPage = () => {
                         const isThisConfirmed = isConfirmed && (c.institution?._id === inst._id || c.institution === inst._id);
 
                         return (
-                          <div
+                          <motion.div
                             key={inst._id || idx}
+                            initial={{ opacity: 0, x: 8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.25, delay: idx * 0.04 }}
+                            whileHover={{ y: -1, transition: { duration: 0.15 } }}
                             className={`p-4 rounded-lg border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                               isThisConfirmed
                                 ? 'border-blue-500/70 bg-blue-500/10 ring-1 ring-blue-500/30'
@@ -301,7 +310,7 @@ export const MatchReviewPage = () => {
                                 </span>
                               )}
                             </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>
@@ -324,17 +333,17 @@ export const MatchReviewPage = () => {
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })
           ) : (
-            <div className="p-12 text-center text-slate-400 text-xs bg-[#101D35] rounded-xl border border-slate-700/80">
+            <motion.div className="p-12 text-center text-slate-400 text-xs bg-[#101D35] rounded-xl border border-slate-700/80" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
               No match reviews in this category.
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
