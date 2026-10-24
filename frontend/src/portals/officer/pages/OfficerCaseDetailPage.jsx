@@ -455,12 +455,18 @@ export function OfficerCaseDetailPage() {
                   required
                   className="w-full py-2 px-3 bg-[#151618] border border-[#232427] rounded-lg text-white"
                 >
-                  {bureaus.map((b) => (
-                    <option key={b._id} value={b._id}>
-                      {b.name} ({b.code})
-                    </option>
-                  ))}
+                  {bureaus.map((b) => {
+                    const officerEmail = b.code === 'RB' ? 'officer.rb@aicte.gov.in' : b.code === 'APPROVAL' ? 'officer.approval@aicte.gov.in' : b.code === 'ACADEMIC' ? 'officer.academic@aicte.gov.in' : b.code === 'PGRC' ? 'officer.pgrc@aicte.gov.in' : `officer.${b.code?.toLowerCase()}@aicte.gov.in`;
+                    return (
+                      <option key={b._id} value={b._id}>
+                        {b.name} ({b.code}) — Login: {officerEmail}
+                      </option>
+                    );
+                  })}
                 </select>
+                <p className="text-[11px] text-[#8A99B5] mt-1.5 leading-relaxed bg-[#151618] p-2 rounded border border-[#232427]">
+                  💡 <strong>Bureau Access:</strong> To view this case after assignment, log into the <strong>Bureau Portal</strong> (<code className="text-[#6C7BFF]">/bureau/login</code>) as the officer of the selected bureau.
+                </p>
               </div>
 
               <div>

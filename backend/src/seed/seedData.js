@@ -155,6 +155,20 @@ export const seedDatabase = async () => {
       bureau: bureauMap.get('RB')._id,
     },
     {
+      name: 'Dr. K. Srinivas (Approval Bureau Officer)',
+      email: 'officer.approval@aicte.gov.in',
+      passwordHash,
+      role: 'bureau_officer',
+      bureau: bureauMap.get('APPROVAL')._id,
+    },
+    {
+      name: 'Prof. M. K. Roy (Academic Bureau Officer)',
+      email: 'officer.academic@aicte.gov.in',
+      passwordHash,
+      role: 'bureau_officer',
+      bureau: bureauMap.get('ACADEMIC')._id,
+    },
+    {
       name: 'Sunita Rao (PGRC Officer)',
       email: 'officer.pgrc@aicte.gov.in',
       passwordHash,

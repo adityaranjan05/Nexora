@@ -17,6 +17,7 @@ import {
 import { bureauApi } from '../../../shared/api/bureauApi';
 import { StatusBadge } from '../../../shared/components/StatusBadge';
 import { SkeletonLoader } from '../../../shared/components/SkeletonLoader';
+import { useAuth } from '../../../context/AuthContext';
 
 const STATUS_CHIPS = [
   { label: 'All Cases', value: 'all' },
@@ -28,6 +29,8 @@ const STATUS_CHIPS = [
 ];
 
 export function BureauCasesPage() {
+  const { getPortalAuth } = useAuth();
+  const { user } = getPortalAuth('bureau');
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
@@ -90,12 +93,12 @@ export function BureauCasesPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-semibold uppercase px-2 py-0.5 rounded bg-[#6C7BFF]/15 text-[#6C7BFF] border border-[#6C7BFF]/30">
-              Bureau Queue
+              {user?.bureau?.name || 'Bureau Queue'} ({user?.bureau?.code || 'BUREAU'})
             </span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">My Assigned Cases</h1>
           <p className="text-xs text-[#71717A] mt-0.5">
-            Cases allocated specifically to your bureau for investigation and resolution.
+            Cases allocated specifically to <strong className="text-[#A1A1AA]">{user?.bureau?.name || 'your bureau'}</strong> for investigation and resolution.
           </p>
         </div>
 

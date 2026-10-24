@@ -138,26 +138,57 @@ export function BureauLoginPage() {
           </form>
 
           {/* Quick Demo Accounts for Bureau Portal ONLY */}
+          {/* Quick Demo Accounts for Bureau Portal ONLY */}
           <div className="mt-5 pt-4 border-t border-[#1F2023]">
-            <p className="text-[10px] font-semibold text-[#71717A] uppercase tracking-wider mb-2">
-              Bureau Portal Demo Accounts
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-semibold text-[#71717A] uppercase tracking-wider">
+                Select Bureau to Sign In
+              </p>
+              <span className="text-[10px] text-[#A1A1AA]">Password: Password@123</span>
+            </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('officer.approval@aicte.gov.in')}
+                className="p-2.5 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#6C7BFF]/40 cursor-pointer"
+              >
+                <div className="font-semibold text-[#6C7BFF] text-xs">Approval Bureau</div>
+                <div className="text-[10px] text-[#71717A] truncate">officer.approval@aicte.gov.in</div>
+              </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin('officer.rb@aicte.gov.in')}
                 className="p-2.5 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#6C7BFF]/40 cursor-pointer"
               >
-                <div className="font-semibold text-[#6C7BFF] text-xs">Bureau Officer (RB)</div>
+                <div className="font-semibold text-[#6C7BFF] text-xs">Regulatory Bureau (RB)</div>
                 <div className="text-[10px] text-[#71717A] truncate">officer.rb@aicte.gov.in</div>
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickLogin('operator@aicte.gov.in')}
-                className="p-2.5 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#F59E0B]/40 cursor-pointer"
+                onClick={() => handleQuickLogin('officer.academic@aicte.gov.in')}
+                className="p-2.5 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#6C7BFF]/40 cursor-pointer"
               >
-                <div className="font-semibold text-[#F59E0B] text-xs">Data Operator</div>
-                <div className="text-[10px] text-[#71717A] truncate">operator@aicte.gov.in</div>
+                <div className="font-semibold text-[#6C7BFF] text-xs">Academic Bureau</div>
+                <div className="text-[10px] text-[#71717A] truncate">officer.academic@aicte.gov.in</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('officer.pgrc@aicte.gov.in')}
+                className="p-2.5 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#6C7BFF]/40 cursor-pointer"
+              >
+                <div className="font-semibold text-[#6C7BFF] text-xs">Grievance Cell (PGRC)</div>
+                <div className="text-[10px] text-[#71717A] truncate">officer.pgrc@aicte.gov.in</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('operator@aicte.gov.in')}
+                className="col-span-2 p-2 rounded-lg bg-[#151618] hover:bg-[#1A1B1E] border border-[#232427] text-left transition hover:border-[#F59E0B]/40 cursor-pointer flex items-center justify-between"
+              >
+                <div>
+                  <span className="font-semibold text-[#F59E0B] text-xs">Data Operator</span>
+                  <span className="text-[10px] text-[#71717A] ml-2">operator@aicte.gov.in</span>
+                </div>
+                <span className="text-[10px] text-[#71717A]">Regulatory Bureau</span>
               </button>
             </div>
           </div>
