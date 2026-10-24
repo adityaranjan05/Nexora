@@ -18,7 +18,14 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', getCases);
-router.post('/', canEditCase, createCase);
+router.post(
+  '/',
+  (req, res, next) => {
+    if (req.user?.role === 'student') return next();
+    return canEditCase(req, res, next);
+  },
+  createCase
+);
 router.post('/link', canEditCase, linkCases);
 router.get('/:id', getCaseById);
 router.get('/:id/history', getCaseHistory);

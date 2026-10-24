@@ -439,8 +439,11 @@ export const createCase = async (req, res, next) => {
 
     const fullDescription = subject ? `[${subject}] ${description}` : description;
 
+    const isStudentSubmission = req.user?.role === 'student';
+
     const newCase = await Case.create({
       caseId,
+      submittedBy: isStudentSubmission ? req.user._id : undefined,
       sourceSystem: 'STUDENT_PORTAL',
       sourceCaseRef: caseId,
       institution: institution || undefined,
@@ -455,7 +458,7 @@ export const createCase = async (req, res, next) => {
       receivedDate,
       status: 'pending',
       currentBureau: bureau ? bureau._id : undefined,
-      lastActionText: `Case registered via Student Intake (${studentName || 'Student'} / ${enrollmentNo || 'N/A'})`,
+      lastActionText: `Case registered via Student Intake (${isStudentSubmission ? req.user.name : studentName || 'Student'} / ${enrollmentNo || 'N/A'})`,
       lastActionDate: new Date(),
       nextActionText: 'Pending initial intake review & allocation',
       expectedDisposalDate,
@@ -466,7 +469,8 @@ export const createCase = async (req, res, next) => {
       actionType: 'received',
       performedBy: req.user?._id,
       toBureau: bureau ? bureau._id : undefined,
-      remarks: `Registered from Student Intake. Student: ${studentName || 'Student'} (${enrollmentNo || 'N/A'}, ${email || 'N/A'}, ${phone || 'N/A'}). Attached files: ${evidenceFiles.length}.`,
+      //remarks: `Registered from Student Intake. Student: ${studentName || 'Student'} (${enrollmentNo || 'N/A'}, ${email || 'N/A'}, ${phone || 'N/A'}). Attached files: ${evidenceFiles.length}.`,
+      remarks: `Registered from Student Intake. Student: ${isStudentSubmission ? req.user.name : studentName || 'Student'} (${enrollmentNo || 'N/A'}, ${isStudentSubmission ? req.user.email : email || 'N/A'}, ${phone || 'N/A'}). Attached files: ${evidenceFiles.length}.`,
       timestamp: new Date(),
     });
 
