@@ -1,3 +1,4 @@
+import { User } from '../models/User.js';
 import { Case } from '../models/Case.js';
 import { CaseAction } from '../models/CaseAction.js';
 import { CaseLink } from '../models/CaseLink.js';
@@ -440,10 +441,23 @@ export const createCase = async (req, res, next) => {
     const fullDescription = subject ? `[${subject}] ${description}` : description;
 
     const isStudentSubmission = req.user?.role === 'student';
+    let submittedBy = isStudentSubmission ? req.user._id : undefined;
+
+    if (!isStudentSubmission && email) {
+      const student = await User.findOne({
+        email: email.trim().toLowerCase(),
+        role: 'student',
+        isActive: true,
+      }).select('_id');
+
+      if (student) {
+        submittedBy = student._id;
+      }
+    }
 
     const newCase = await Case.create({
       caseId,
-      submittedBy: isStudentSubmission ? req.user._id : undefined,
+      submittedBy,
       sourceSystem: 'STUDENT_PORTAL',
       sourceCaseRef: caseId,
       institution: institution || undefined,
