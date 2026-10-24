@@ -34,6 +34,21 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.get('/api/me', (await import('./middleware/auth.js')).authenticate, (await import('./controllers/authController.js')).getMe);
+// Students may use only the cases API.
+app.use(
+  '/api',
+  (await import('./middleware/auth.js')).authenticate,
+  (req, res, next) => {
+    if (req.user.role === 'student' && req.path !== '/cases' && !req.path.startsWith('/cases/')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied',
+      });
+    }
+
+    next();
+  }
+);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/institutions', institutionRoutes);

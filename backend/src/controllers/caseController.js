@@ -26,6 +26,10 @@ export const getCases = async (req, res, next) => {
     } = req.query;
 
     const query = {};
+    // Students can access only complaints they submitted.
+    if (req.user.role === 'student') {
+      query.submittedBy = req.user._id;
+    }
 
     // Role-based restrictions
     if (req.user.role === 'regional_officer' && req.user.region) {
@@ -127,7 +131,13 @@ export const getCases = async (req, res, next) => {
 
 export const getCaseById = async (req, res, next) => {
   try {
-    const c = await Case.findById(req.params.id)
+    const caseQuery = { _id: req.params.id };
+
+    if (req.user.role === 'student') {
+      caseQuery.submittedBy = req.user._id;
+    }
+
+    const c = await Case.findOne(caseQuery)
       .populate('institution')
       .populate('currentBureau')
       .populate('assignedOfficer', 'name email role');
@@ -135,7 +145,12 @@ export const getCaseById = async (req, res, next) => {
     if (!c) {
       return res.status(404).json({ success: false, message: 'Case not found' });
     }
-
+    if (req.user.role === 'student') {
+      return res.json({
+        success: true,
+        data: c.toObject(),
+      });
+    }
     // Find links
     const links = await CaseLink.find({
       $or: [{ caseA: c._id }, { caseB: c._id }],
@@ -171,6 +186,19 @@ export const getCaseById = async (req, res, next) => {
 
 export const getCaseHistory = async (req, res, next) => {
   try {
+    if (req.user.role === 'student') {
+      const ownedCase = await Case.exists({
+        _id: req.params.id,
+        submittedBy: req.user._id,
+      });
+
+      if (!ownedCase) {
+        return res.status(404).json({
+          success: false,
+          message: 'Case not found',
+        });
+      }
+    }
     const actions = await CaseAction.find({ case: req.params.id })
       .populate('performedBy', 'name email role')
       .populate('fromBureau', 'code name')

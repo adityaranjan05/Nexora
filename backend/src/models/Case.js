@@ -21,6 +21,11 @@ const CaseSchema = new mongoose.Schema(
     category: { type: String, required: true, index: true },
     description: { type: String, required: true },
     complainantType: { type: String, default: 'Student' },
+    submittedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+    },
     receivedDate: { type: Date, required: true, index: true },
     status: {
       type: String,
