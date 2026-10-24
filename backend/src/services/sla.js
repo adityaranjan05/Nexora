@@ -5,7 +5,7 @@ import { createOrUpdateAlert } from './alerts.js';
 export const runSlaChecks = async () => {
   const now = new Date();
   const openCases = await Case.find({
-    status: { $in: ['pending', 'under_process', 'transferred', 'escalated'] },
+    status: { $in: ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'] },
   }).populate('currentBureau');
 
   // Load default SLA rules

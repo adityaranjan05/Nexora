@@ -57,11 +57,13 @@ export const normalizeDate = (rawDate) => {
 export const normalizeStatus = (rawStatus) => {
   if (!rawStatus) return 'pending';
   const s = rawStatus.toLowerCase().trim().replace(/[-\s]/g, '_');
-  if (['pending', 'open', 'new'].includes(s)) return 'pending';
-  if (['under_process', 'in_progress', 'processing', 'reviewing'].includes(s)) return 'under_process';
-  if (['disposed', 'resolved', 'closed', 'completed'].includes(s)) return 'disposed';
+  if (['pending', 'open', 'new', 'unassigned'].includes(s)) return 'pending';
+  if (['under_process', 'in_progress', 'processing', 'reviewing', 'active'].includes(s)) return 'under_process';
+  if (['needs_info', 'need_info', 'info_needed', 'more_info'].includes(s)) return 'needs_info';
+  if (['disposed', 'resolved', 'closed', 'completed', 'done'].includes(s)) return 'disposed';
   if (['transferred', 'forwarded', 'routed'].includes(s)) return 'transferred';
   if (['escalated', 'escalate'].includes(s)) return 'escalated';
+  if (['rejected', 'reject'].includes(s)) return 'rejected';
   return 'pending';
 };
 

@@ -1,4 +1,5 @@
 import multer from 'multer';
+import path from 'path';
 import { parseUploadFile } from '../services/connectors/csvConnector.js';
 import { fetchRbCases } from '../services/connectors/rbConnector.js';
 import { fetchPgrcCases } from '../services/connectors/pgrcConnector.js';
@@ -7,9 +8,23 @@ import { ImportBatch } from '../models/ImportBatch.js';
 import { SyncLog } from '../models/SyncLog.js';
 import { runSlaChecks } from '../services/sla.js';
 
-// Multer memory storage for uploads
+// Multer memory storage with file type (csv, xlsx) and size (5 MB) limits
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const allowedExts = ['.csv', '.xlsx', '.xls'];
+  if (allowedExts.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only CSV and XLSX files are permitted (max 5 MB).'), false);
+  }
+};
+
 const storage = multer.memoryStorage();
-export const uploadMiddleware = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } });
+export const uploadMiddleware = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter,
+});
 
 export const uploadBulkFile = async (req, res, next) => {
   try {

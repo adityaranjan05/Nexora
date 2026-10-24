@@ -18,21 +18,25 @@ export const getDashboardSummary = async (req, res, next) => {
       totalReceived,
       pending,
       underProcess,
+      needsInfo,
       disposed,
       transferred,
       escalated,
+      rejected,
       beyondTimeline,
       activeOverlaps,
     ] = await Promise.all([
       Case.countDocuments(filter),
       Case.countDocuments({ ...filter, status: 'pending' }),
       Case.countDocuments({ ...filter, status: 'under_process' }),
+      Case.countDocuments({ ...filter, status: 'needs_info' }),
       Case.countDocuments({ ...filter, status: 'disposed' }),
       Case.countDocuments({ ...filter, status: 'transferred' }),
       Case.countDocuments({ ...filter, status: 'escalated' }),
+      Case.countDocuments({ ...filter, status: 'rejected' }),
       Case.countDocuments({
         ...filter,
-        status: { $in: ['pending', 'under_process', 'transferred', 'escalated'] },
+        status: { $in: ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'] },
         expectedDisposalDate: { $lt: now },
       }),
       OverlapGroup.countDocuments({ status: 'open' }),
@@ -46,9 +50,11 @@ export const getDashboardSummary = async (req, res, next) => {
         totalReceived,
         pending,
         underProcess,
+        needsInfo,
         disposed,
         transferred,
         escalated,
+        rejected,
         beyondTimeline,
         activeOverlaps,
         disposalRate: `${disposalRate}%`,
@@ -72,9 +78,11 @@ export const getBureauWorkload = async (req, res, next) => {
       const statusMap = {
         pending: 0,
         under_process: 0,
+        needs_info: 0,
         disposed: 0,
         transferred: 0,
         escalated: 0,
+        rejected: 0,
       };
 
       bureauCases.forEach((c) => {
@@ -109,7 +117,7 @@ export const getInstitutionStatus = async (req, res, next) => {
           totalCases: { $sum: 1 },
           openCases: {
             $sum: {
-              $cond: [{ $in: ['$status', ['pending', 'under_process', 'transferred', 'escalated']] }, 1, 0],
+              $cond: [{ $in: ['$status', ['pending', 'under_process', 'needs_info', 'transferred', 'escalated']] }, 1, 0],
             },
           },
           disposedCases: {
@@ -157,4 +165,93 @@ export const getInstitutionStatus = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+/**
+ * Bureau Dashboard KPI summary (for logged-in bureau officer / data operator's bureau)
+ * GET /api/bureau/dashboard
+ * Counts: assigned, pending, in progress, needs info, overdue, due soon, done this month
+ */
+export const getBureauDashboard = async (req, res, next) => {
+  try {
+    const userBureauId = req.user?.bureau?._id
+      ? req.user.bureau._id.toString()
+      : req.user?.bureau?.toString();
+
+    if (!userBureauId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: User is not associated with any bureau.',
+      });
+    }
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const bureauFilter = { currentBureau: userBureauId };
+
+    const [
+      assigned,
+      pending,
+      underProcess,
+      needsInfo,
+      disposed,
+      rejected,
+      overdue,
+      openCasesForDueSoon,
+      doneThisMonth,
+    ] = await Promise.all([
+      Case.countDocuments(bureauFilter),
+      Case.countDocuments({ ...bureauFilter, status: 'pending' }),
+      Case.countDocuments({ ...bureauFilter, status: 'under_process' }),
+      Case.countDocuments({ ...bureauFilter, status: 'needs_info' }),
+      Case.countDocuments({ ...bureauFilter, status: 'disposed' }),
+      Case.countDocuments({ ...bureauFilter, status: 'rejected' }),
+      Case.countDocuments({
+        ...bureauFilter,
+        status: { $nin: ['disposed', 'rejected'] },
+        expectedDisposalDate: { $lt: now },
+      }),
+      Case.find({
+        ...bureauFilter,
+        status: { $nin: ['disposed', 'rejected'] },
+        expectedDisposalDate: { $gte: now },
+      }).select('expectedDisposalDate'),
+      Case.countDocuments({
+        ...bureauFilter,
+        status: 'disposed',
+        disposedDate: { $gte: startOfMonth },
+      }),
+    ]);
+
+    const dueSoon = openCasesForDueSoon.filter((c) => {
+      const diff = new Date(c.expectedDisposalDate).getTime() - now.getTime();
+      return diff <= 3 * 24 * 60 * 60 * 1000;
+    }).length;
+
+    res.json({
+      success: true,
+      data: {
+        assigned,
+        pending,
+        inProgress: underProcess,
+        underProcess,
+        needsInfo,
+        disposed,
+        rejected,
+        overdue,
+        dueSoon,
+        doneThisMonth,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default {
+  getDashboardSummary,
+  getBureauWorkload,
+  getInstitutionStatus,
+  getBureauDashboard,
 };

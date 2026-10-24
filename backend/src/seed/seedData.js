@@ -20,6 +20,29 @@ import { runSlaChecks } from '../services/sla.js';
 
 const SEED_PASSWORD = 'Password@123';
 
+/**
+ * Guard: refuse to run in production mode
+ */
+export const ensureNotProduction = () => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Operation refused: Cannot seed database or create test student in production environment (NODE_ENV=production).');
+  }
+};
+
+/**
+ * Helper to create a student user (refuses in production)
+ */
+export const createStudent = async (studentData = {}) => {
+  ensureNotProduction();
+  const passwordHash = await bcrypt.hash(studentData.password || SEED_PASSWORD, 10);
+  return await User.create({
+    name: studentData.name || 'Rahul Sharma (Student Complainant)',
+    email: (studentData.email || 'student@example.com').toLowerCase(),
+    passwordHash,
+    role: 'student',
+  });
+};
+
 const REGIONS = ['Northern', 'Southern', 'Western', 'Eastern', 'Central'];
 
 const INSTITUTION_NAMES = [
@@ -75,6 +98,7 @@ const CATEGORIES = [
 ];
 
 export const seedDatabase = async () => {
+  ensureNotProduction();
   console.log('[Seed] Starting database seed...');
   await connectDB();
 
@@ -150,6 +174,13 @@ export const seedDatabase = async () => {
       email: 'operator@aicte.gov.in',
       passwordHash,
       role: 'data_operator',
+      bureau: bureauMap.get('RB')._id,
+    },
+    {
+      name: 'Rahul Sharma (Student Complainant)',
+      email: 'student@example.com',
+      passwordHash,
+      role: 'student',
     },
   ];
   const users = await User.insertMany(usersData);
@@ -189,6 +220,58 @@ export const seedDatabase = async () => {
 
   const bureauPool = [rbId, pgrcId, approvalId, academicId, roNorthId, roSouthId];
   const officerPool = [userMap.get('bureau_officer'), userMap.get('super_admin')];
+
+  // 0. Specific Demo Cases
+  // (a) Unassigned Student Complaint (enters officer assignment queue & match review)
+  casesToInsert.push({
+    caseId: 'AICTE-STU-2026-00001',
+    sourceSystem: 'STUDENT_PORTAL',
+    sourceCaseRef: 'STU-REF-001',
+    institution: institutions[0]._id,
+    rawInstitutionName: institutions[0].name,
+    rawCity: institutions[0].city,
+    rawState: institutions[0].state,
+    rawPincode: institutions[0].pincode,
+    matchStatus: 'matched',
+    matchScore: 100,
+    category: 'Fee Issues',
+    description: 'Institution is demanding unapproved capitation fees and refusing to release original marksheets upon withdrawal.',
+    complainantType: 'Student',
+    receivedDate: new Date(now.getTime() - 2 * 86400000),
+    status: 'pending',
+    currentBureau: undefined, // Unassigned!
+    submittedBy: userMap.get('student')._id,
+    lastActionText: 'Complaint registered via Student Portal',
+    lastActionDate: new Date(now.getTime() - 2 * 86400000),
+    nextActionText: 'Pending initial bureau allocation by Officer',
+    expectedDisposalDate: new Date(now.getTime() + 28 * 86400000),
+  });
+
+  // (b) Needs Info Case (student clarification requested)
+  casesToInsert.push({
+    caseId: 'AICTE-RB-2026-00999',
+    sourceSystem: 'STUDENT_PORTAL',
+    sourceCaseRef: 'STU-REF-002',
+    institution: institutions[1]._id,
+    rawInstitutionName: institutions[1].name,
+    rawCity: institutions[1].city,
+    rawState: institutions[1].state,
+    rawPincode: institutions[1].pincode,
+    matchStatus: 'matched',
+    matchScore: 100,
+    category: 'Faculty Shortage',
+    description: 'Severe shortage of qualified professors in mechanical engineering laboratory sessions.',
+    complainantType: 'Student',
+    receivedDate: new Date(now.getTime() - 8 * 86400000),
+    status: 'needs_info',
+    currentBureau: rbId,
+    submittedBy: userMap.get('student')._id,
+    assignedOfficer: userMap.get('bureau_officer')._id,
+    lastActionText: 'Information requested: Please upload semester fee receipt and schedule of cancelled lectures',
+    lastActionDate: new Date(now.getTime() - 1 * 86400000),
+    nextActionText: 'Awaiting student clarification response',
+    expectedDisposalDate: new Date(now.getTime() + 22 * 86400000),
+  });
 
   // A. 12 Deliberate Overlaps across institutions[0..11]
   // Overlap means Institution has active cases in at least two different bureaus!
@@ -419,6 +502,17 @@ export const seedDatabase = async () => {
         performedBy: userMap.get('bureau_officer')._id,
         remarks: 'All inquiries completed. Full refund/compliance secured. Case formally disposed.',
         timestamp: c.disposedDate || new Date(),
+      });
+    }
+
+    if (c.status === 'needs_info') {
+      actionsData.push({
+        case: c._id,
+        actionType: 'info_requested',
+        performedBy: userMap.get('bureau_officer')._id,
+        remarks: 'Please upload semester fee receipt and schedule of cancelled lectures.',
+        isPublic: true,
+        timestamp: new Date(c.receivedDate.getTime() + 2 * 86400000),
       });
     }
   });

@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "mongo": "node dev-mongo.js",
     "seed": "node src/seed/seedData.js",
     "test": "node --test src/tests/*.test.js"
   },
@@ -17,13 +18,19 @@
     "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.7.1",
     "fuse.js": "^7.0.0",
+    "helmet": "^8.3.0",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.5.0",
     "node-cron": "^3.0.3",
     "pdfkit": "^0.16.0",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "supertest": "^7.3.1"
   }
 }

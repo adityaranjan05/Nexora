@@ -56,3 +56,31 @@ export const markAlertAsRead = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getStudentNotifications = async (req, res, next) => {
+  try {
+    const notifications = await Notification.find({ user: req.user._id })
+      .populate('alert')
+      .sort({ createdAt: -1 })
+      .limit(30);
+
+    const unreadCount = await Notification.countDocuments({
+      user: req.user._id,
+      isRead: false,
+    });
+
+    res.json({
+      success: true,
+      unreadCount,
+      data: notifications,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default {
+  getAlerts,
+  markAlertAsRead,
+  getStudentNotifications,
+};

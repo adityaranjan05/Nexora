@@ -1,79 +1,96 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authApi } from '../api/client';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { authApi } from '../shared/api/authApi';
+import { portalForRole } from '../shared/utils/portal';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
-  const [user, setUser] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem('user');
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [loading, setLoading] = useState(true);
-
-  // Sync token and verify user on mount
-  useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
-        try {
-          const res = await authApi.getMe();
-          if (res?.success && res?.user) {
-            setUser(res.user);
-            localStorage.setItem('user', JSON.stringify(res.user));
-          }
-        } catch {
-          // Token expired or invalid
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
-        }
-      } else {
-        setToken(null);
-        setUser(null);
+  const [sessions, setSessions] = useState(() => {
+    const getStored = (portal) => {
+      try {
+        const token = localStorage.getItem(`${portal}_token`) || null;
+        const userStr = localStorage.getItem(`${portal}_user`);
+        const user = userStr ? JSON.parse(userStr) : null;
+        return { token, user };
+      } catch {
+        return { token: null, user: null };
       }
-      setLoading(false);
     };
 
-    initAuth();
-  }, []);
+    return {
+      officer: getStored('officer'),
+      bureau: getStored('bureau'),
+      student: getStored('student'),
+    };
+  });
 
-  const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
-    if (res?.success && res?.token) {
-      localStorage.setItem('token', res.token);
-      localStorage.setItem('user', JSON.stringify(res.user));
-      setToken(res.token);
-      setUser(res.user);
-      return res.user;
+  const [loading, setLoading] = useState(false);
+
+  const login = async (email, password, portal) => {
+    setLoading(true);
+    try {
+      const res = await authApi.login({ email, password, portal });
+      if (res?.success && res?.token) {
+        const assignedPortal = res.portal || portalForRole(res.user?.role) || portal;
+        localStorage.setItem(`${assignedPortal}_token`, res.token);
+        localStorage.setItem(`${assignedPortal}_user`, JSON.stringify(res.user));
+
+        setSessions((prev) => ({
+          ...prev,
+          [assignedPortal]: { token: res.token, user: res.user },
+        }));
+
+        return res.user;
+      }
+      throw new Error(res?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
-    throw new Error(res?.message || 'Login failed');
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
-    window.location.href = '/login';
-  };
+  const logout = useCallback((portal) => {
+    if (portal && sessions[portal]) {
+      localStorage.removeItem(`${portal}_token`);
+      localStorage.removeItem(`${portal}_user`);
+      setSessions((prev) => ({
+        ...prev,
+        [portal]: { token: null, user: null },
+      }));
+      window.location.href = `/${portal}/login`;
+    } else {
+      // Clear all
+      ['officer', 'bureau', 'student'].forEach((p) => {
+        localStorage.removeItem(`${p}_token`);
+        localStorage.removeItem(`${p}_user`);
+      });
+      setSessions({
+        officer: { token: null, user: null },
+        bureau: { token: null, user: null },
+        student: { token: null, user: null },
+      });
+      window.location.href = '/login';
+    }
+  }, [sessions]);
+
+  const getPortalAuth = useCallback((portal) => {
+    const session = sessions[portal] || { token: null, user: null };
+    return {
+      token: session.token,
+      user: session.user,
+      role: session.user?.role,
+      isAuthenticated: Boolean(session.token && session.user),
+      loading,
+    };
+  }, [sessions, loading]);
 
   return (
     <AuthContext.Provider
       value={{
-        token,
-        user,
-        role: user?.role,
-        isAuthenticated: Boolean(token && user),
+        sessions,
         loading,
         login,
         logout,
-        setUser,
+        getPortalAuth,
       }}
     >
       {children}
@@ -88,3 +105,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

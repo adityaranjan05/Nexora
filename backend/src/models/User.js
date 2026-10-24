@@ -14,6 +14,7 @@ const UserSchema = new mongoose.Schema(
         'bureau_officer',
         'regional_officer',
         'data_operator',
+        'student',
       ],
     },
     bureau: { type: mongoose.Schema.Types.ObjectId, ref: 'Bureau' },

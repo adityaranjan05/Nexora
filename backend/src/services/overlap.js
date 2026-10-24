@@ -3,7 +3,7 @@ import { OverlapGroup } from '../models/OverlapGroup.js';
 import { Bureau } from '../models/Bureau.js';
 import { createOrUpdateAlert } from './alerts.js';
 
-const OPEN_STATUSES = ['pending', 'under_process', 'transferred', 'escalated'];
+const OPEN_STATUSES = ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'];
 
 const REGULATORY_KEYWORDS = [
   'show-cause',

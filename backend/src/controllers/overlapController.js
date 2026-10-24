@@ -1,11 +1,19 @@
 import { OverlapGroup } from '../models/OverlapGroup.js';
 import { CaseAction } from '../models/CaseAction.js';
+import { Case } from '../models/Case.js';
 
 export const getOverlaps = async (req, res, next) => {
   try {
-    const { status = 'open' } = req.query;
+    const { status = 'open', mine } = req.query;
     const query = {};
-    if (status) query.status = status;
+    if (status && status !== 'all') query.status = status;
+
+    // Bureau mine=true filter: only overlaps involving MY bureau's cases
+    if (mine === 'true' && req.user?.bureau) {
+      const userBureauId = req.user.bureau._id ? req.user.bureau._id : req.user.bureau;
+      const myBureauCases = await Case.find({ currentBureau: userBureauId }).select('_id');
+      query.cases = { $in: myBureauCases.map((c) => c._id) };
+    }
 
     const overlaps = await OverlapGroup.find(query)
       .populate('institution')

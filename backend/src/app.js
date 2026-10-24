@@ -1,26 +1,50 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { authenticate, requirePortal } from './middleware/auth.js';
+import { getMe } from './controllers/authController.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
-import dashboardRoutes from './routes/dashboardRoutes.js';
-import caseRoutes from './routes/caseRoutes.js';
-import institutionRoutes from './routes/institutionRoutes.js';
-import overlapRoutes from './routes/overlapRoutes.js';
-import alertRoutes from './routes/alertRoutes.js';
-import matchReviewRoutes from './routes/matchReviewRoutes.js';
-import importSyncRoutes from './routes/importSyncRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
+import officerRoutes from './routes/officerRoutes.js';
+import bureauRoutes from './routes/bureauRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
 import mockRoutes from './routes/mockRoutes.js';
 
 const app = express();
 
+// Security HTTP headers
+app.use(helmet());
+
+// Cross-Origin Resource Sharing
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Rate limiters (skip during automated tests)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, message: 'Too many login attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
+app.use('/api', generalLimiter);
+
+// Body parser with size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -31,21 +55,20 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes
+// Authentication & Self endpoints
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
-app.get('/api/me', (await import('./middleware/auth.js')).authenticate, (await import('./controllers/authController.js')).getMe);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/cases', caseRoutes);
-app.use('/api/institutions', institutionRoutes);
-app.use('/api/overlaps', overlapRoutes);
-app.use('/api/alerts', alertRoutes);
-app.use('/api/match-review', matchReviewRoutes);
-app.use('/api/import', importSyncRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/admin', adminRoutes);
+app.get('/api/me', authenticate, getMe);
 
-// Mock external sources
-app.use('/mock', mockRoutes);
+// Dedicated Portal API route groups with portal enforcement
+app.use('/api/officer', authenticate, requirePortal('officer'), officerRoutes);
+app.use('/api/bureau', authenticate, requirePortal('bureau'), bureauRoutes);
+app.use('/api/student', authenticate, requirePortal('student'), studentRoutes);
+
+// Mock external sources (Gated behind non-production)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/mock', mockRoutes);
+}
 
 // Central error handler
 app.use(errorHandler);

@@ -1,6 +1,7 @@
 import { Institution } from '../models/Institution.js';
 import { Case } from '../models/Case.js';
 import { OverlapGroup } from '../models/OverlapGroup.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 
 export const getInstitutions = async (req, res, next) => {
   try {
@@ -8,10 +9,11 @@ export const getInstitutions = async (req, res, next) => {
     const query = {};
 
     if (q) {
+      const escaped = escapeRegex(q);
       query.$or = [
-        { name: new RegExp(q, 'i') },
-        { aictePermanentId: new RegExp(q, 'i') },
-        { city: new RegExp(q, 'i') },
+        { name: new RegExp(escaped, 'i') },
+        { aictePermanentId: new RegExp(escaped, 'i') },
+        { city: new RegExp(escaped, 'i') },
       ];
     }
     if (region) query.region = region;
@@ -54,7 +56,7 @@ export const getInstitutionById = async (req, res, next) => {
         institution,
         cases,
         totalCases: cases.length,
-        openCases: cases.filter((c) => ['pending', 'under_process', 'transferred', 'escalated'].includes(c.status)).length,
+        openCases: cases.filter((c) => ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'].includes(c.status)).length,
         disposedCases: cases.filter((c) => c.status === 'disposed').length,
         bureauDistribution,
         activeOverlap: overlap,

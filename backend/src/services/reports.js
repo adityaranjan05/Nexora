@@ -63,7 +63,7 @@ export const generateReportData = async (type, options = {}) => {
             _id: { $ifNull: ['$instInfo.region', 'Unknown Region'] },
             totalCases: { $sum: 1 },
             pendingCases: {
-              $sum: { $cond: [{ $in: ['$status', ['pending', 'under_process']] }, 1, 0] },
+              $sum: { $cond: [{ $in: ['$status', ['pending', 'under_process', 'needs_info']] }, 1, 0] },
             },
             disposedCases: {
               $sum: { $cond: [{ $eq: ['$status', 'disposed'] }, 1, 0] },
@@ -81,7 +81,7 @@ export const generateReportData = async (type, options = {}) => {
     case 'ageing': {
       // Buckets: 0-15, 16-30, 31-60, 60+
       const openCases = await Case.find({
-        status: { $in: ['pending', 'under_process', 'transferred', 'escalated'] },
+        status: { $in: ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'] },
       }).select('caseId rawInstitutionName category receivedDate status expectedDisposalDate');
 
       const buckets = {
@@ -175,7 +175,7 @@ export const generateReportData = async (type, options = {}) => {
         const totalCases = await Case.countDocuments({ institution: inst._id });
         const openCases = await Case.countDocuments({
           institution: inst._id,
-          status: { $in: ['pending', 'under_process', 'transferred', 'escalated'] },
+          status: { $in: ['pending', 'under_process', 'needs_info', 'transferred', 'escalated'] },
         });
         const hasOverlap = await OverlapGroup.exists({
           institution: inst._id,
