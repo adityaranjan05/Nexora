@@ -1,49 +1,52 @@
 import React from 'react';
 
 export const StatusBadge = ({ status, size = 'md' }) => {
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs';
+  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs';
+  const normalized = (status || '').toLowerCase().replace(/_/g, ' ');
 
-  switch (status) {
-    case 'Pending':
+  switch (normalized) {
+    case 'pending':
       return (
-        <span className={`inline-flex items-center font-medium rounded-full bg-slate-100 text-slate-700 border border-slate-300 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mr-1.5 animate-pulse" />
+        <span className={`inline-flex items-center font-medium rounded-full bg-[#8A99B5]/15 text-[#8A99B5] border border-[#8A99B5]/30 ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#8A99B5] mr-1.5 animate-pulse" />
           Pending
         </span>
       );
-    case 'Under Process':
+    case 'under process':
       return (
-        <span className={`inline-flex items-center font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5" />
+        <span className={`inline-flex items-center font-medium rounded-full bg-[#6C7BFF]/15 text-[#6C7BFF] border border-[#6C7BFF]/30 ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#6C7BFF] mr-1.5" />
           Under Process
         </span>
       );
-    case 'Disposed':
+    case 'disposed':
       return (
-        <span className={`inline-flex items-center font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5" />
+        <span className={`inline-flex items-center font-medium rounded-full bg-[#19D3A2]/15 text-[#19D3A2] border border-[#19D3A2]/30 ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#19D3A2] mr-1.5" />
           Disposed
         </span>
       );
-    case 'Transferred':
+    case 'transferred':
       return (
-        <span className={`inline-flex items-center font-medium rounded-full bg-purple-50 text-purple-700 border border-purple-200 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-purple-600 mr-1.5" />
+        <span className={`inline-flex items-center font-medium rounded-full bg-[#B07CFF]/15 text-[#B07CFF] border border-[#B07CFF]/30 ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#B07CFF] mr-1.5" />
           Transferred
         </span>
       );
-    case 'Escalated':
+    case 'escalated':
       return (
-        <span className={`inline-flex items-center font-semibold rounded-full bg-rose-50 text-rose-700 border border-rose-300 ${sizeClasses}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 mr-1.5 animate-ping" />
+        <span className={`inline-flex items-center font-semibold rounded-full bg-[#FF4D79]/15 text-[#FF4D79] border border-[#FF4D79]/30 ${sizeClasses}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF4D79] mr-1.5" />
           Escalated
         </span>
       );
     default:
       return (
-        <span className={`inline-flex items-center font-medium rounded-full bg-gray-100 text-gray-700 ${sizeClasses}`}>
+        <span className={`inline-flex items-center font-medium rounded-full bg-[#1F2023] text-[#A1A1AA] border border-[#232427] capitalize ${sizeClasses}`}>
           {status}
         </span>
       );
   }
 };
+
+export default StatusBadge;

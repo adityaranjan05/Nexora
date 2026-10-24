@@ -4,55 +4,50 @@ const BUREAU_CONFIG = {
   'Approval Bureau': {
     label: 'Approval Bureau',
     code: 'AB',
-    color: 'bg-indigo-50 text-indigo-700',
-    border: 'border-indigo-200',
+    color: 'bg-[#6C7BFF]/15 text-[#6C7BFF] border-[#6C7BFF]/30',
   },
   'Grievance Redressal Cell': {
     label: 'Grievance Redressal Cell',
     code: 'GRC',
-    color: 'bg-teal-50 text-teal-800',
-    border: 'border-teal-200',
+    color: 'bg-[#19D3A2]/15 text-[#19D3A2] border-[#19D3A2]/30',
   },
   'Regulation Bureau': {
     label: 'Regulation Bureau',
     code: 'RB',
-    color: 'bg-amber-50 text-amber-800',
-    border: 'border-amber-200',
+    color: 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30',
   },
   'RIFD Bureau': {
     label: 'RIFD Bureau',
     code: 'RIFD',
-    color: 'bg-cyan-50 text-cyan-800',
-    border: 'border-cyan-200',
+    color: 'bg-[#2DD4BF]/15 text-[#2DD4BF] border-[#2DD4BF]/30',
   },
   'Administration & Vigilance': {
     label: 'Administration & Vigilance',
     code: 'AVC',
-    color: 'bg-rose-50 text-rose-800',
-    border: 'border-rose-200',
+    color: 'bg-[#FF4D79]/15 text-[#FF4D79] border-[#FF4D79]/30',
   },
   'Student Development Cell': {
     label: 'Student Development Cell',
     code: 'SDC',
-    color: 'bg-emerald-50 text-emerald-800',
-    border: 'border-emerald-200',
+    color: 'bg-[#B07CFF]/15 text-[#B07CFF] border-[#B07CFF]/30',
   },
 };
 
 export const BureauBadge = ({ bureau, showCodeOnly = false }) => {
   const config = BUREAU_CONFIG[bureau] || {
     label: bureau,
-    code: 'AICTE',
-    color: 'bg-slate-50 text-slate-700',
-    border: 'border-slate-200',
+    code: bureau || 'AICTE',
+    color: 'bg-[#1F2023] text-[#A1A1AA] border-[#232427]',
   };
 
   return (
     <span
       title={config.label}
-      className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded border ${config.color} ${config.border}`}
+      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border font-mono ${config.color}`}
     >
       {showCodeOnly ? config.code : config.label}
     </span>
   );
 };
+
+export default BureauBadge;

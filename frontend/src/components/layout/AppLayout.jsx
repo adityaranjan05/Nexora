@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 import { CommandPalette } from './CommandPalette';
@@ -7,22 +7,32 @@ import { ToastContainer } from './ToastContainer';
 
 export const AppLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
 
   return (
-    <div className="min-h-screen flex bg-gov-surface text-slate-800">
-      {/* Sidebar navigation */}
-      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+    <div className="h-screen w-screen bg-[#0A0A0B] text-[#F4F4F5] p-2 sm:p-2.5 flex gap-2 sm:gap-2.5 overflow-hidden font-sans select-none-off">
+      {/* 1. Left Sidebar Panel (Floating with 16px radius, 1px border) */}
+      <Sidebar 
+        mobileOpen={mobileOpen} 
+        setMobileOpen={setMobileOpen} 
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
 
-      {/* Main content column */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[radial-gradient(ellipse_at_63%_-8%,#173f55_0%,transparent_37%),radial-gradient(ellipse_at_100%_46%,#241f4b_0%,transparent_32%),linear-gradient(140deg,#071522,#0b1b2a_54%,#101a2c)]">
-        <TopNavbar setMobileOpen={setMobileOpen} />
+      {/* Main Workspace Column */}
+      <div className="flex-1 flex flex-col gap-2 sm:gap-2.5 min-w-0 h-full overflow-hidden">
+        {/* 2. Top Bar Panel (Floating rounded strip) */}
+        <TopNavbar 
+          setMobileOpen={setMobileOpen} 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
         
-        {/* Scrollable page body */}
-        <main className="flex-1 overflow-y-auto w-full">
-          <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-6">
-            <Outlet />
-          </div>
-        </main>
+        {/* 3. Content Panel */}
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <Outlet />
+        </div>
       </div>
 
       {/* Global Modals & Notifications */}
@@ -31,3 +41,5 @@ export const AppLayout = () => {
     </div>
   );
 };
+
+export default AppLayout;

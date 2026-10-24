@@ -5,23 +5,23 @@ export const OverlapBadge = ({ severity = 'High', compact = false }) => {
   const getStyle = () => {
     switch (severity) {
       case 'High':
-        return 'bg-purple-100 text-purple-900 border-purple-300 font-semibold';
+        return 'bg-[#FF4D79]/20 text-[#FF4D79] border-[#FF4D79]/40 font-semibold';
       case 'Medium':
-        return 'bg-purple-50 text-purple-800 border-purple-200 font-medium';
+        return 'bg-[#B07CFF]/20 text-[#B07CFF] border-[#B07CFF]/40 font-medium';
       case 'Low':
-        return 'bg-slate-100 text-slate-700 border-slate-200 font-medium';
+        return 'bg-[#8A99B5]/20 text-[#8A99B5] border-[#8A99B5]/40 font-medium';
       default:
-        return 'bg-purple-50 text-purple-800 border-purple-200 font-medium';
+        return 'bg-[#B07CFF]/20 text-[#B07CFF] border-[#B07CFF]/40 font-medium';
     }
   };
 
   if (compact) {
     return (
       <span
-        title={`Potential Inter-Bureau Overlap (${severity} Priority)`}
-        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] border ${getStyle()}`}
+        title={`Cross-Bureau Overlap (${severity})`}
+        className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] border ${getStyle()}`}
       >
-        <GitMerge className="w-3 h-3 text-purple-600" />
+        <GitMerge className="w-3 h-3" />
         <span>Overlap</span>
       </span>
     );
@@ -29,10 +29,12 @@ export const OverlapBadge = ({ severity = 'High', compact = false }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs border ${getStyle()}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] border ${getStyle()}`}
     >
-      <Layers className="w-3.5 h-3.5 text-purple-700" />
-      <span>Potential Overlap ({severity})</span>
+      <Layers className="w-3.5 h-3.5" />
+      <span>Overlap ({severity})</span>
     </span>
   );
 };
+
+export default OverlapBadge;

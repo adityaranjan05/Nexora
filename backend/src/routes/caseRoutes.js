@@ -8,6 +8,7 @@ import {
   transferCase,
   escalateCase,
   linkCases,
+  createCase,
 } from '../controllers/caseController.js';
 import { authenticate } from '../middleware/auth.js';
 import { canEditCase, authorize } from '../middleware/roles.js';
@@ -17,6 +18,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', getCases);
+router.post('/', canEditCase, createCase);
 router.post('/link', canEditCase, linkCases);
 router.get('/:id', getCaseById);
 router.get('/:id/history', getCaseHistory);
