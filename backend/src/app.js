@@ -91,10 +91,8 @@ app.use('/api/officer', authenticate, requirePortal('officer'), officerRoutes);
 app.use('/api/bureau', authenticate, requirePortal('bureau'), bureauRoutes);
 app.use('/api/student', authenticate, requirePortal('student'), studentRoutes);
 
-// Mock external sources (Gated behind non-production)
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/mock', mockRoutes);
-}
+// Mock external sources (used for demo connectors & external portal sync)
+app.use('/mock', mockRoutes);
 
 // Central error handler
 app.use(errorHandler);

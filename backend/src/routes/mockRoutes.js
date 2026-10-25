@@ -2,9 +2,7 @@ import { Router } from 'express';
 
 const router = Router();
 
-// Mock Regulatory Bureau API
-router.get('/rb/cases', (req, res) => {
-  const cases = [
+export const mockRbCases = [
     {
       complaint_no: 'RB-2026-00891',
       aicte_id: '1-45678912',
@@ -59,12 +57,12 @@ router.get('/rb/cases', (req, res) => {
     },
   ];
 
-  res.json({ success: true, count: cases.length, cases });
+// Mock Regulatory Bureau API
+router.get('/rb/cases', (req, res) => {
+  res.json({ success: true, count: mockRbCases.length, cases: mockRbCases });
 });
 
-// Mock Public Grievance Redressal Cell API
-router.get('/pgrc/cases', (req, res) => {
-  const grievances = [
+export const mockPgrcCases = [
     {
       grievance_id: 'PGRC-GRV-2026-4412',
       institute_code: '1-45678912', // Deliberate overlap with Apex Inst!
@@ -105,7 +103,9 @@ router.get('/pgrc/cases', (req, res) => {
     },
   ];
 
-  res.json({ success: true, count: grievances.length, grievances });
+// Mock Public Grievance Redressal Cell API
+router.get('/pgrc/cases', (req, res) => {
+  res.json({ success: true, count: mockPgrcCases.length, grievances: mockPgrcCases });
 });
 
 export default router;
