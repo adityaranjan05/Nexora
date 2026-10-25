@@ -9,11 +9,13 @@ const startServer = async () => {
 
     startScheduler();
 
-    app.listen(env.PORT, () => {
+    const PORT = process.env.PORT || env.PORT || 5000;
+
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`=======================================================`);
       console.log(` AICTE Integrated Complaint Monitoring Backend running `);
-      console.log(` Port: ${env.PORT} | Environment: ${env.NODE_ENV} `);
-      console.log(` Health check: http://localhost:${env.PORT}/health `);
+      console.log(` Port: ${PORT} | Environment: ${env.NODE_ENV} `);
+      console.log(` Health check: /health `);
       console.log(`=======================================================`);
     });
   } catch (error) {
