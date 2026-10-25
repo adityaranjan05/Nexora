@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../shared/api/authApi';
 import { portalForRole } from '../shared/utils/portal';
 
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const login = async (email, password, portal) => {
     setLoading(true);
@@ -40,6 +42,9 @@ export const AuthProvider = ({ children }) => {
           [assignedPortal]: { token: res.token, user: res.user },
         }));
 
+        // Clear cached data from previous user so fresh data loads
+        queryClient.clear();
+
         return res.user;
       }
       throw new Error(res?.message || 'Login failed');
@@ -49,6 +54,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = useCallback((portal) => {
+    // Clear all cached query data to prevent stale data leaks
+    queryClient.clear();
+
     if (portal && sessions[portal]) {
       localStorage.removeItem(`${portal}_token`);
       localStorage.removeItem(`${portal}_user`);

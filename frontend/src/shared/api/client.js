@@ -33,9 +33,34 @@ export const detectPortal = (url = '') => {
   return 'officer';
 };
 
-// Request interceptor: attach token by active portal
+/**
+ * Check if a request URL is an auth endpoint that does NOT need a token attached.
+ */
+const isAuthEndpoint = (url = '') => {
+  const cleanUrl = (url || '').toLowerCase();
+  return cleanUrl.includes('/auth/login') || cleanUrl.includes('/auth/register');
+};
+
+/**
+ * Extract the portal directly from a portal-scoped API URL (e.g. /officer/*, /bureau/*, /student/*).
+ * Returns null if the URL is not portal-scoped (e.g. /auth/login).
+ */
+const portalFromApiUrl = (url = '') => {
+  const cleanUrl = (url || '').toLowerCase();
+  if (cleanUrl.includes('/officer')) return 'officer';
+  if (cleanUrl.includes('/bureau')) return 'bureau';
+  if (cleanUrl.includes('/student')) return 'student';
+  return null;
+};
+
+// Request interceptor: attach token by active portal, but skip auth endpoints
 apiClient.interceptors.request.use(
   (config) => {
+    // Don't attach tokens to login/register requests — they don't need auth
+    if (isAuthEndpoint(config.url)) {
+      return config;
+    }
+
     const portal = detectPortal(config.url);
     const tokenKey = `${portal}_token`;
     if (typeof localStorage !== 'undefined') {
@@ -49,20 +74,26 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: on 401, redirect to that portal's own login, not global /login
+// Response interceptor: on 401, only clear tokens for portal-scoped API calls
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      const portal = detectPortal(error.config?.url);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(`${portal}_token`);
-        localStorage.removeItem(`${portal}_user`);
-      }
+      // Only auto-clear tokens and redirect for portal-scoped API calls,
+      // NOT for auth endpoints like login (where a 401 is just "wrong password")
+      const requestUrl = error.config?.url || '';
+      const portal = portalFromApiUrl(requestUrl);
 
-      const targetLogin = `/${portal}/login`;
-      if (typeof window !== 'undefined' && window.location.pathname !== targetLogin) {
-        window.location.href = targetLogin;
+      if (portal) {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(`${portal}_token`);
+          localStorage.removeItem(`${portal}_user`);
+        }
+
+        const targetLogin = `/${portal}/login`;
+        if (typeof window !== 'undefined' && window.location.pathname !== targetLogin) {
+          window.location.href = targetLogin;
+        }
       }
     }
     return Promise.reject(error);
@@ -70,3 +101,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+

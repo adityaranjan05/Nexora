@@ -97,7 +97,7 @@ const CATEGORIES = [
   'Harassment',
 ];
 
-export const seedDatabase = async () => {
+export const seedDatabase = async (shouldDisconnect = true) => {
   ensureNotProduction();
   console.log('[Seed] Starting database seed...');
   await connectDB();
@@ -571,7 +571,9 @@ export const seedDatabase = async () => {
   console.log(`  Notifications:${notifCount} generated                `);
   console.log('========================================================');
 
-  await disconnectDB();
+  if (shouldDisconnect) {
+    await disconnectDB();
+  }
 };
 
 if (process.argv[1]?.endsWith('seedData.js')) {
