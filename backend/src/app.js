@@ -24,14 +24,35 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Cross-Origin Resource Sharing
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+const configuredOrigin = env.CLIENT_URL ? env.CLIENT_URL.replace(/\/$/, '') : '';
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like health checks, mobile apps, curl)
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (
+        !configuredOrigin ||
+        cleanOrigin === configuredOrigin ||
+        cleanOrigin === 'http://localhost:5173' ||
+        cleanOrigin === 'http://localhost:3000' ||
+        cleanOrigin.endsWith('.onrender.com')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, cleanOrigin);
+    },
+    credentials: true,
+  })
+);
 
-// Rate limiters (skip during automated tests)
+// Rate limiters (skip during automated tests; validate: false prevents ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on reverse proxies)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   skip: () => process.env.NODE_ENV === 'test',
 });
 
@@ -41,6 +62,7 @@ const loginLimiter = rateLimit({
   message: { success: false, message: 'Too many login attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   skip: () => process.env.NODE_ENV === 'test',
 });
 

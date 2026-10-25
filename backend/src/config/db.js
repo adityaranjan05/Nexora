@@ -36,12 +36,31 @@ export const connectDB = async () => {
   // 1. Try connecting to the configured MONGODB_URI first (e.g. localhost:27017 or Atlas)
   try {
     const conn = await mongoose.connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 10000,
     });
     console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
+
+    // Check if database needs seeding
+    try {
+      const { User } = await import('../models/User.js');
+      const userCount = await User.countDocuments();
+      if (userCount === 0) {
+        console.log('[Database] Remote database is empty. Automatically seeding default users and datasets...');
+        const { seedDatabase } = await import('../seed/seedData.js');
+        await seedDatabase(false);
+      }
+    } catch (seedErr) {
+      console.warn('[Database] Seeding check note:', seedErr.message);
+    }
+
     return conn;
   } catch (err) {
-    console.log(`[Database] No existing MongoDB active at ${env.MONGODB_URI}. Initializing embedded MongoDB...`);
+    console.warn(`[Database] Failed to connect to ${env.MONGODB_URI}: ${err.message}`);
+    if (env.NODE_ENV === 'production' || env.MONGODB_URI.startsWith('mongodb+srv://')) {
+      console.error('[Database] Production/Atlas connection failed. Please check MONGODB_URI, Atlas IP whitelist (0.0.0.0/0), and credentials.');
+      throw err;
+    }
+    console.log(`[Database] Initializing embedded MongoDB fallback...`);
   }
 
   // 2. Automatically launch embedded MongoDB in non-production environments
