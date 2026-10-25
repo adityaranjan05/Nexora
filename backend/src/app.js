@@ -16,6 +16,10 @@ import mockRoutes from './routes/mockRoutes.js';
 
 const app = express();
 
+// Trust the first proxy (required for Render, Heroku, etc. behind a load balancer)
+// Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1);
+
 // Security HTTP headers
 app.use(helmet());
 
